@@ -13,8 +13,6 @@ Execute a prompt plan to implement unfinished prompts in the project
    - Commit the changes to your repository with a clear commit message
    - merge into the develop branch
    - Update **@prompt_plan.md** to mark this prompt as completed.
-4. Repeat with the next unfinished prompt
-   No newline at end of file
-5. Ask for review before merging into the development branch
+4. Ask for review before merging into the development branch
    - If successful Update **@prompt_plan.md** to mark this prompt as completed.
-6. Repeat with the next unfinished prompt
+5. Repeat with the next unfinished prompt
