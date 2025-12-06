@@ -35,15 +35,16 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        Assert.Equal(StatusCodes.Status400BadRequest, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("VALIDATION_ERROR");
-        envelope.TraceId.Should().NotBeNullOrEmpty();
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("VALIDATION_ERROR", envelope.Error.Code);
+        Assert.NotNull(envelope.TraceId);
+        Assert.True(!string.IsNullOrEmpty(envelope.TraceId));
     }
 
     [Fact]
@@ -66,14 +67,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+        Assert.Equal(StatusCodes.Status401Unauthorized, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("UNAUTHORIZED");
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("UNAUTHORIZED", envelope.Error.Code);
     }
 
     [Fact]
@@ -96,14 +97,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+        Assert.Equal(StatusCodes.Status403Forbidden, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("FORBIDDEN");
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("FORBIDDEN", envelope.Error.Code);
     }
 
     [Fact]
@@ -126,14 +127,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        Assert.Equal(StatusCodes.Status404NotFound, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("NOT_FOUND");
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("NOT_FOUND", envelope.Error.Code);
     }
 
     [Fact]
@@ -156,14 +157,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status409Conflict);
+        Assert.Equal(StatusCodes.Status409Conflict, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("CONFLICT");
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("CONFLICT", envelope.Error.Code);
     }
 
     [Fact]
@@ -186,14 +187,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status499ClientClosedRequest);
+        Assert.Equal(StatusCodes.Status499ClientClosedRequest, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("CLIENT_CLOSED");
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("CLIENT_CLOSED", envelope.Error.Code);
     }
 
     [Fact]
@@ -216,14 +217,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status502BadGateway);
+        Assert.Equal(StatusCodes.Status502BadGateway, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("UPSTREAM_ERROR");
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("UPSTREAM_ERROR", envelope.Error.Code);
     }
 
     [Fact]
@@ -246,14 +247,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("INTERNAL_ERROR");
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("INTERNAL_ERROR", envelope.Error.Code);
     }
 
     [Fact]
@@ -279,8 +280,9 @@ public class GlobalExceptionMiddlewareTests
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.TraceId.Should().NotBeNullOrEmpty();
+        Assert.NotNull(envelope);
+        Assert.NotNull(envelope.TraceId);
+        Assert.True(!string.IsNullOrEmpty(envelope.TraceId));
     }
 
     [Fact]
@@ -303,8 +305,8 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.Content.Headers.ContentType.Should().NotBeNull();
-        response.Content.Headers.ContentType.MediaType.Should().Be("application/json");
+        Assert.NotNull(response.Content.Headers.ContentType);
+        Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
     }
 
     [Fact]
@@ -324,9 +326,9 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("\"Success\"");
+        Assert.Equal("\"Success\"", content);
     }
 
     [Fact]
@@ -351,7 +353,7 @@ public class GlobalExceptionMiddlewareTests
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
         // Assert
-        envelope.Error.Level.Should().Be(ApiResponseErrorLevel.Error);
+        Assert.Equal(ApiResponseErrorLevel.Error, envelope.Error.Level);
     }
 
     [Fact]
@@ -376,7 +378,7 @@ public class GlobalExceptionMiddlewareTests
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
         // Assert
-        envelope.Error.Level.Should().Be(ApiResponseErrorLevel.Warning);
+        Assert.Equal(ApiResponseErrorLevel.Warning, envelope.Error.Level);
     }
 
     [Fact]
@@ -399,14 +401,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("BUSINESS_RULE_VIOLATION");
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("BUSINESS_RULE_VIOLATION", envelope.Error.Code);
     }
 
     [Fact]
@@ -430,14 +432,14 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Message.Should().Be("An unexpected error occurred. Please try again later.");
-        envelope.Error.Message.Should().NotContain("Database connection string");
+        Assert.NotNull(envelope);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("An unexpected error occurred. Please try again later.", envelope.Error.Message);
+        Assert.DoesNotContain("Database connection string", envelope.Error.Message);
     }
 
     [Fact]
@@ -461,13 +463,13 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Message.Should().Be("Detailed error message for debugging.");
+        Assert.NotNull(envelope);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("Detailed error message for debugging.", envelope.Error.Message);
     }
 
     [Fact]
@@ -494,13 +496,13 @@ public class GlobalExceptionMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        Assert.Equal(StatusCodes.Status400BadRequest, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.Error.Should().NotBeNull();
+        Assert.NotNull(envelope);
+        Assert.NotNull(envelope.Error);
         // 4xx errors should show their actual messages even in production
-        envelope.Error.Message.Should().Contain("Validation failed");
+        Assert.Contains("Validation failed", envelope.Error.Message);
     }
 }

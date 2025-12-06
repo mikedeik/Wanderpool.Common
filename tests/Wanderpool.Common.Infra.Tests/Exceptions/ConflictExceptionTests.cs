@@ -11,8 +11,8 @@ public class ConflictExceptionTests
         var exception = new ConflictException("Email already exists.", "user@example.com");
 
         // Assert
-        exception.ErrorCode.Should().Be("CONFLICT");
-        exception.ResourceIdentifier.Should().Be("user@example.com");
+        Assert.Equal("CONFLICT", exception.ErrorCode);
+        Assert.Equal("user@example.com", exception.ResourceIdentifier);
     }
 
     // [Fact]

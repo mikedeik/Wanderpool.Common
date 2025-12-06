@@ -11,8 +11,8 @@ public class BusinessRuleExceptionTests
         var exception = new BusinessRuleException("OrderQuantity", "Order quantity cannot exceed inventory.");
 
         // Assert
-        exception.ErrorCode.Should().Be("BUSINESS_RULE_VIOLATION");
-        exception.RuleName.Should().Be("OrderQuantity");
+        Assert.Equal("BUSINESS_RULE_VIOLATION", exception.ErrorCode);
+        Assert.Equal("OrderQuantity", exception.RuleName);
     }
 
     // [Fact]
@@ -41,6 +41,6 @@ public class BusinessRuleExceptionTests
         var exception = new BusinessRuleException("InvalidStatus", "Status transition not allowed.");
 
         // Assert
-        exception.Message.Should().Contain("InvalidStatus");
+        Assert.Contains("InvalidStatus", exception.Message);
     }
 }

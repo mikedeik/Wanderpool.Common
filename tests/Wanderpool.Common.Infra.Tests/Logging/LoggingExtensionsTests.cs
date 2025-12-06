@@ -18,9 +18,9 @@ public class LoggingExtensionsTests
         builder.AddWanderpoolLogging(serviceName);
 
         // Assert
-        builder.Should().NotBeNull();
+        Assert.NotNull(builder);
         // Verify that Serilog is configured (Log.Logger should be set)
-        Log.Logger.Should().NotBeNull();
+        Assert.NotNull(Log.Logger);
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class LoggingExtensionsTests
         var result = builder.AddWanderpoolLogging("TestService");
 
         // Assert
-        result.Should().Be(builder);
+        Assert.Equal(builder, result);
     }
 
     [Fact]
@@ -47,10 +47,10 @@ public class LoggingExtensionsTests
         builder.AddWanderpoolLogging();
 
         // Assert
-        builder.Should().NotBeNull();
+        Assert.NotNull(builder);
         // The serviceName property is not directly accessible, but we can verify
         // that the configuration was set up without errors
-        Log.Logger.Should().NotBeNull();
+        Assert.NotNull(Log.Logger);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class LoggingExtensionsTests
             .ConfigureServices(services => services.AddLogging());
 
         // Assert
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
     }
 
     [Fact]
@@ -79,9 +79,9 @@ public class LoggingExtensionsTests
         var app = builder.Build();
 
         // Assert
-        app.Should().NotBeNull();
+        Assert.NotNull(app);
         // Serilog should be configured with enrichers
-        Log.Logger.Should().NotBeNull();
+        Assert.NotNull(Log.Logger);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class LoggingExtensionsTests
 
         // Assert
         // Verify that the app can be built with Serilog configured
-        app.Should().NotBeNull();
+        Assert.NotNull(app);
     }
 
     [Fact]
@@ -111,8 +111,8 @@ public class LoggingExtensionsTests
         var app = builder.Build();
 
         // Assert
-        app.Environment.IsDevelopment().Should().BeTrue();
-        app.Should().NotBeNull();
+        Assert.True(app.Environment.IsDevelopment());
+        Assert.NotNull(app);
     }
 
     [Fact]
@@ -127,8 +127,8 @@ public class LoggingExtensionsTests
         var app = builder.Build();
 
         // Assert
-        app.Environment.IsProduction().Should().BeTrue();
-        app.Should().NotBeNull();
+        Assert.True(app.Environment.IsProduction());
+        Assert.NotNull(app);
     }
 
     [Fact]
@@ -142,8 +142,8 @@ public class LoggingExtensionsTests
         builder.AddWanderpoolLogging(customServiceName);
 
         // Assert
-        builder.Should().NotBeNull();
-        Log.Logger.Should().NotBeNull();
+        Assert.NotNull(builder);
+        Assert.NotNull(Log.Logger);
     }
 
     [Fact]
@@ -156,8 +156,8 @@ public class LoggingExtensionsTests
         builder.AddWanderpoolLogging(null);
 
         // Assert
-        builder.Should().NotBeNull();
-        Log.Logger.Should().NotBeNull();
+        Assert.NotNull(builder);
+        Assert.NotNull(Log.Logger);
     }
 
     [Fact]
@@ -170,8 +170,8 @@ public class LoggingExtensionsTests
         builder.AddWanderpoolLogging(string.Empty);
 
         // Assert
-        builder.Should().NotBeNull();
-        Log.Logger.Should().NotBeNull();
+        Assert.NotNull(builder);
+        Assert.NotNull(Log.Logger);
     }
 
     [Fact]
@@ -188,6 +188,7 @@ public class LoggingExtensionsTests
             builder.AddWanderpoolLogging("Service2");
         };
 
-        action.Should().NotThrow();
+        var exception = Record.Exception(action);
+        Assert.Null(exception);
     }
 }

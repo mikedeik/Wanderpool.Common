@@ -20,8 +20,8 @@ public class GlobalExceptionHandlingExtensionsTests
         var result = app.UseWanderpoolExceptionHandling();
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().Be(app); // Should return the app for method chaining
+        Assert.NotNull(result);
+        Assert.Equal(app, result); // Should return the app for method chaining
     }
 
     [Fact]
@@ -41,15 +41,16 @@ public class GlobalExceptionHandlingExtensionsTests
         var response = await client.GetAsync("/error");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.IsSuccess.Should().BeFalse();
-        envelope.Error.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("INTERNAL_ERROR");
-        envelope.TraceId.Should().NotBeNullOrEmpty();
+        Assert.NotNull(envelope);
+        Assert.False(envelope.IsSuccess);
+        Assert.NotNull(envelope.Error);
+        Assert.Equal("INTERNAL_ERROR", envelope.Error.Code);
+        Assert.NotNull(envelope.TraceId);
+        Assert.True(!string.IsNullOrEmpty(envelope.TraceId));
     }
 
     [Fact]
@@ -69,9 +70,9 @@ public class GlobalExceptionHandlingExtensionsTests
         var response = await client.GetAsync("/success");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("\"Hello World\"");
+        Assert.Equal("\"Hello World\"", content);
     }
 
     [Fact]
@@ -92,7 +93,7 @@ public class GlobalExceptionHandlingExtensionsTests
 
         // Assert
         var response = await client.GetAsync("/test");
-        response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
     }
 
     [Fact]
@@ -108,8 +109,8 @@ public class GlobalExceptionHandlingExtensionsTests
             .UseRouting();
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().Be(app);
+        Assert.NotNull(result);
+        Assert.Equal(app, result);
     }
 
     [Fact]
@@ -136,12 +137,12 @@ public class GlobalExceptionHandlingExtensionsTests
         var response = await client.GetAsync("/validate");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        Assert.Equal(StatusCodes.Status400BadRequest, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("VALIDATION_ERROR");
+        Assert.NotNull(envelope);
+        Assert.Equal("VALIDATION_ERROR", envelope.Error.Code);
     }
 
     [Fact]
@@ -164,12 +165,12 @@ public class GlobalExceptionHandlingExtensionsTests
         var response = await client.GetAsync("/notfound");
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        Assert.Equal(StatusCodes.Status404NotFound, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
-        envelope.Should().NotBeNull();
-        envelope.Error.Code.Should().Be("NOT_FOUND");
+        Assert.NotNull(envelope);
+        Assert.Equal("NOT_FOUND", envelope.Error.Code);
     }
 
     [Fact]
@@ -189,8 +190,8 @@ public class GlobalExceptionHandlingExtensionsTests
         var response = await client.GetAsync("/error");
 
         // Assert
-        response.Content.Headers.ContentType.Should().NotBeNull();
-        response.Content.Headers.ContentType.MediaType.Should().Be("application/json");
+        Assert.NotNull(response.Content.Headers.ContentType);
+        Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
     }
 
     [Fact]
@@ -212,7 +213,8 @@ public class GlobalExceptionHandlingExtensionsTests
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
         // Assert
-        envelope.TraceId.Should().NotBeNullOrEmpty();
+        Assert.NotNull(envelope.TraceId);
+        Assert.True(!string.IsNullOrEmpty(envelope.TraceId));
     }
 
     [Fact]
@@ -234,6 +236,6 @@ public class GlobalExceptionHandlingExtensionsTests
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
         // Assert
-        envelope.Error.Level.Should().Be(ApiResponseErrorLevel.Error);
+        Assert.Equal(ApiResponseErrorLevel.Error, envelope.Error.Level);
     }
 }

@@ -15,9 +15,9 @@ public class NotFoundExceptionTests
         var exception = new NotFoundException(resourceType, resourceId);
 
         // Assert
-        exception.ErrorCode.Should().Be("NOT_FOUND");
-        exception.ResourceType.Should().Be(resourceType);
-        exception.ResourceId.Should().Be(resourceId);
+        Assert.Equal("NOT_FOUND", exception.ErrorCode);
+        Assert.Equal(resourceType, exception.ResourceType);
+        Assert.Equal(resourceId, exception.ResourceId);
     }
 
     // [Fact]
@@ -47,7 +47,7 @@ public class NotFoundExceptionTests
         var exception = new NotFoundException("User", "456");
 
         // Assert
-        exception.Message.Should().Contain("User");
-        exception.Message.Should().Contain("456");
+        Assert.Contains("User", exception.Message);
+        Assert.Contains("456", exception.Message);
     }
 }

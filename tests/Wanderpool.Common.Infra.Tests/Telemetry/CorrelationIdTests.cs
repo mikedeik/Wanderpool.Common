@@ -18,7 +18,7 @@ public class CorrelationIdTests
         var context = new CorrelationContext(correlationId);
 
         // Assert
-        context.CorrelationId.Should().Be(correlationId);
+        Assert.Equal(correlationId, context.CorrelationId);
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public class CorrelationIdTests
     {
         // Act & Assert
         var action = () => new CorrelationContext(null!);
-        action.Should().Throw<ArgumentException>();
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class CorrelationIdTests
     {
         // Act & Assert
         var action = () => new CorrelationContext(string.Empty);
-        action.Should().Throw<ArgumentException>();
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Fact]
@@ -60,10 +60,11 @@ public class CorrelationIdTests
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status200OK);
-        content.Should().NotBeNullOrEmpty();
+        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.NotNull(content);
+        Assert.True(!string.IsNullOrEmpty(content));
         // Content should be a GUID string
-        Guid.TryParse(content.Trim('"'), out _).Should().BeTrue();
+        Assert.True(Guid.TryParse(content.Trim('"'), out _));
     }
 
     [Fact]
@@ -91,8 +92,8 @@ public class CorrelationIdTests
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status200OK);
-        content.Should().Contain(correlationId);
+        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.Contains(correlationId, content);
     }
 
     [Fact]
@@ -115,8 +116,8 @@ public class CorrelationIdTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        response.Headers.Should().ContainKey("X-Correlation-Id");
-        response.Headers.GetValues("X-Correlation-Id").First().Should().Be(correlationId);
+        Assert.True(response.Headers.Contains("X-Correlation-Id"));
+        Assert.Equal(correlationId, response.Headers.GetValues("X-Correlation-Id").First());
     }
 
     [Fact]
@@ -129,8 +130,8 @@ public class CorrelationIdTests
         services.AddWanderpoolCorrelationId();
 
         // Assert
-        services.Should().Contain(sd => sd.ServiceType == typeof(IHttpContextAccessor));
-        services.Should().Contain(sd => sd.ServiceType == typeof(ICorrelationContext));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(IHttpContextAccessor));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(ICorrelationContext));
     }
 
     [Fact]
@@ -144,7 +145,7 @@ public class CorrelationIdTests
         var result = app.UseWanderpoolCorrelationId();
 
         // Assert
-        result.Should().Be(app);
+        Assert.Equal(app, result);
     }
 
     [Fact]
@@ -170,9 +171,10 @@ public class CorrelationIdTests
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status200OK);
-        content.Should().NotBeNullOrEmpty();
-        content.Should().Contain("correlationId");
+        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.NotNull(content);
+        Assert.True(!string.IsNullOrEmpty(content));
+        Assert.Contains("correlationId", content);
     }
 
     [Fact]
@@ -194,8 +196,8 @@ public class CorrelationIdTests
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        response.StatusCode.Should().Be(StatusCodes.Status200OK);
-        content.Should().Be("\"success\"");
+        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.Equal("\"success\"", content);
     }
 
     [Fact]
@@ -224,7 +226,7 @@ public class CorrelationIdTests
         var content2 = await response2.Content.ReadAsStringAsync();
 
         // Assert
-        content1.Should().NotBe(content2);
+        Assert.NotEqual(content2, content1);
     }
 
     [Fact]
@@ -252,6 +254,6 @@ public class CorrelationIdTests
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        content.Should().Contain(providedId);
+        Assert.Contains(providedId, content);
     }
 }

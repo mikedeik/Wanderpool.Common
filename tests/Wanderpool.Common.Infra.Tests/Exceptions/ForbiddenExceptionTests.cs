@@ -11,8 +11,8 @@ public class ForbiddenExceptionTests
         var exception = new ForbiddenException("Access to this resource is denied.");
 
         // Assert
-        exception.ErrorCode.Should().Be("FORBIDDEN");
-        exception.Message.Should().Contain("Access");
+        Assert.Equal("FORBIDDEN", exception.ErrorCode);
+        Assert.Contains("Access", exception.Message);
     }
 
     // [Fact]

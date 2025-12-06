@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Trace;
 using Wanderpool.Common.Infra.Telemetry;
@@ -18,7 +17,7 @@ public class TracingExtensionsTests
         var provider = services.BuildServiceProvider();
 
         // Assert
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 
     [Fact]
@@ -31,9 +30,9 @@ public class TracingExtensionsTests
         var result = services.AddWanderpoolTracing();
 
         // Assert
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
         // Service collection should have registered OpenTelemetry services
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 
     [Fact]
@@ -46,7 +45,7 @@ public class TracingExtensionsTests
         var result = services.AddWanderpoolTracing();
 
         // Assert
-        result.Should().Be(services);
+        Assert.Equal(services, result);
     }
 
     [Fact]
@@ -60,7 +59,7 @@ public class TracingExtensionsTests
         services.AddWanderpoolTracing(customServiceName);
 
         // Assert
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 
     [Fact]
@@ -73,7 +72,7 @@ public class TracingExtensionsTests
         var result = services.AddWanderpoolTracing("MyService");
 
         // Assert
-        result.Should().Be(services);
+        Assert.Equal(services, result);
     }
 
     [Fact]
@@ -87,7 +86,7 @@ public class TracingExtensionsTests
         services.AddWanderpoolTracing(endpoint);
 
         // Assert
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 
     [Fact]
@@ -100,7 +99,7 @@ public class TracingExtensionsTests
         var result = services.AddWanderpoolTracing("http://localhost:4317");
 
         // Assert
-        result.Should().Be(services);
+        Assert.Equal(services, result);
     }
 
     [Fact]
@@ -127,8 +126,8 @@ public class TracingExtensionsTests
 
         // Act & Assert
         var action = () => services.AddWanderpoolTracing("http://localhost:4317", samplingProbability: -0.1);
-        action.Should().Throw<ArgumentException>()
-            .WithMessage("*Sampling probability must be between 0.0 and 1.0*");
+        var exception = Assert.Throws<ArgumentException>(action);
+        Assert.Contains("Sampling probability must be between 0.0 and 1.0", exception.Message);
     }
 
     [Fact]
@@ -139,8 +138,8 @@ public class TracingExtensionsTests
 
         // Act & Assert
         var action = () => services.AddWanderpoolTracing("http://localhost:4317", samplingProbability: 1.1);
-        action.Should().Throw<ArgumentException>()
-            .WithMessage("*Sampling probability must be between 0.0 and 1.0*");
+        var exception = Assert.Throws<ArgumentException>(action);
+        Assert.Contains("Sampling probability must be between 0.0 and 1.0", exception.Message);
     }
 
     [Fact]
@@ -154,8 +153,8 @@ public class TracingExtensionsTests
         var provider = services.BuildServiceProvider();
 
         // Assert
-        provider.Should().NotBeNull();
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.NotNull(provider);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 
     [Fact]
@@ -170,7 +169,7 @@ public class TracingExtensionsTests
         services.AddWanderpoolTracing(endpoint, samplingProbability);
 
         // Assert
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 
     [Fact]
@@ -186,7 +185,7 @@ public class TracingExtensionsTests
         services.AddWanderpoolTracing(endpoint, samplingProbability, serviceName);
 
         // Assert
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 
     [Fact]
@@ -199,7 +198,7 @@ public class TracingExtensionsTests
         var result = services.AddWanderpoolTracing("http://otel:4317", 0.8, "Service");
 
         // Assert
-        result.Should().Be(services);
+        Assert.Equal(services, result);
     }
 
     [Fact]
@@ -213,7 +212,7 @@ public class TracingExtensionsTests
 
         // Assert
         // The default configuration should use full sampling (1.0 probability)
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 
     [Theory]
@@ -230,7 +229,7 @@ public class TracingExtensionsTests
         // Act & Assert - Should not throw
         services.AddWanderpoolTracing("http://localhost:4317", samplingProbability);
         var provider = services.BuildServiceProvider();
-        provider.Should().NotBeNull();
+        Assert.NotNull(provider);
     }
 
     [Theory]
@@ -245,7 +244,7 @@ public class TracingExtensionsTests
 
         // Act & Assert
         var action = () => services.AddWanderpoolTracing("http://localhost:4317", samplingProbability);
-        action.Should().Throw<ArgumentException>();
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Fact]
@@ -260,6 +259,6 @@ public class TracingExtensionsTests
             .AddLogging();
 
         // Assert
-        services.Should().Contain(sd => sd.ServiceType == typeof(TracerProvider));
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
 }

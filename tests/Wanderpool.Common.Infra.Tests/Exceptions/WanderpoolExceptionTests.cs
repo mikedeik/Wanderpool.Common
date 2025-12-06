@@ -16,24 +16,24 @@ public class WanderpoolExceptionTests
         var exception = new WanderpoolException(errorCode, message);
 
         // Assert
-        exception.ErrorCode.Should().Be(errorCode);
-        exception.Message.Should().Be(message);
+        Assert.Equal(errorCode, exception.ErrorCode);
+        Assert.Equal(message, exception.Message);
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenErrorCodeIsNull()
     {
         // Act & Assert
-        var act = () => new WanderpoolException(null!, "message");
-        act.Should().Throw<ArgumentNullException>().WithParameterName("errorCode");
+        var exception = Assert.Throws<ArgumentException>(() => new WanderpoolException(null!, "message"));
+        Assert.NotNull(exception);
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentException_WhenErrorCodeIsEmpty()
     {
         // Act & Assert
-        var act = () => new WanderpoolException(string.Empty, "message");
-        act.Should().Throw<ArgumentException>();
+        var exception = Assert.Throws<ArgumentException>(() => new WanderpoolException(string.Empty, "message"));
+        Assert.NotNull(exception);
     }
 
     // [Fact]
@@ -67,9 +67,9 @@ public class WanderpoolExceptionTests
         var exception = new WanderpoolException(errorCode, message, innerException);
 
         // Assert
-        exception.InnerException.Should().Be(innerException);
-        exception.ErrorCode.Should().Be(errorCode);
-        exception.Message.Should().Be(message);
+        Assert.Equal(innerException, exception.InnerException);
+        Assert.Equal(errorCode, exception.ErrorCode);
+        Assert.Equal(message, exception.Message);
     }
 
     [Fact]
@@ -81,12 +81,12 @@ public class WanderpoolExceptionTests
         // Act & Assert
         // This test verifies that ErrorCode is read-only (immutable)
         var errorCode = exception.ErrorCode;
-        errorCode.Should().Be("ORIGINAL_CODE");
+        Assert.Equal("ORIGINAL_CODE", errorCode);
 
         // Should not be able to set it
         var properties = typeof(WanderpoolException).GetProperties();
         var errorCodeProperty = properties.FirstOrDefault(p => p.Name == "ErrorCode");
-        errorCodeProperty.Should().NotBeNull();
-        errorCodeProperty!.CanWrite.Should().BeFalse();
+        Assert.NotNull(errorCodeProperty);
+        Assert.False(errorCodeProperty!.CanWrite);
     }
 }

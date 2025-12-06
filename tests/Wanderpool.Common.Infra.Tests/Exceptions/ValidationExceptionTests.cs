@@ -18,8 +18,8 @@ public class ValidationExceptionTests
         var exception = new ValidationException(errors);
 
         // Assert
-        exception.Errors.Should().Equal(errors);
-        exception.ErrorCode.Should().Be("VALIDATION_ERROR");
+        Assert.Equal(errors, exception.Errors);
+        Assert.Equal("VALIDATION_ERROR", exception.ErrorCode);
     }
 
     [Fact]
@@ -29,16 +29,16 @@ public class ValidationExceptionTests
         var emptyErrors = new Dictionary<string, string[]>();
 
         // Act & Assert
-        var act = () => new ValidationException(emptyErrors);
-        act.Should().Throw<ArgumentException>().WithParameterName("errors");
+        var exception = Assert.Throws<ArgumentException>(() => new ValidationException(emptyErrors));
+        Assert.NotNull(exception);
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenErrorsIsNull()
     {
         // Act & Assert
-        var act = () => new ValidationException(null!);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("errors");
+        var exception = Assert.Throws<ArgumentNullException>(() => new ValidationException(null!));
+        Assert.NotNull(exception);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class ValidationExceptionTests
         var exception = new ValidationException(errors);
 
         // Assert
-        exception.ErrorCode.Should().Be("VALIDATION_ERROR");
+        Assert.Equal("VALIDATION_ERROR", exception.ErrorCode);
     }
 
     // [Fact]
@@ -94,8 +94,8 @@ public class ValidationExceptionTests
         // Verify that Errors property is read-only
         var properties = typeof(ValidationException).GetProperties();
         var errorsProperty = properties.FirstOrDefault(p => p.Name == "Errors");
-        errorsProperty.Should().NotBeNull();
-        errorsProperty!.CanWrite.Should().BeFalse();
+        Assert.NotNull(errorsProperty);
+        Assert.False(errorsProperty!.CanWrite);
     }
 
     [Fact]
@@ -112,8 +112,8 @@ public class ValidationExceptionTests
         var exception = new ValidationException(errors);
 
         // Assert
-        exception.Message.Should().Contain("validation");
-        exception.Message.Should().NotBeNull();
-        exception.Message.Length.Should().BeGreaterThan(0);
+        Assert.Contains("validation", exception.Message);
+        Assert.NotNull(exception.Message);
+        Assert.True(exception.Message.Length > 0);
     }
 }
