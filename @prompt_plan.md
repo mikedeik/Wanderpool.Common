@@ -73,7 +73,22 @@ This document tracks the completion status of implementation steps from the Wand
 
 ### STEP-004: Global Exception Handler Middleware - Core
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-06
+
+**Deliverables:**
+- ✅ `GlobalExceptionMiddleware.cs` - Core middleware for handling all unhandled exceptions
+- ✅ `GlobalExceptionMiddlewareTests.cs` - Comprehensive test suite with 14 tests
+  - Tests: Exception mapping for all types, status codes, TraceId inclusion, error levels, pass-through
+
+**Implementation Details:**
+- Exception mapping to HTTP status codes: 400 (Validation), 401 (Unauthorized), 403 (Forbidden), 404 (NotFound), 409 (Conflict), 499 (OperationCancelled), 502 (RemoteService), 500 (Generic/Error)
+- Returns `ApiResponseEnvelope<object>` format with error details
+- Includes TraceId from Activity or HttpContext
+- Logs all exceptions with full stack trace at Error level
+- Error levels determined by HTTP status code (Info for 2xx, Warning for 4xx, Error for 5xx)
+- Properly passes through successful requests without modification
 
 ### STEP-005: Global Exception Handler - Production Mode
 
@@ -303,16 +318,16 @@ This document tracks the completion status of implementation steps from the Wand
 
 ## Summary
 
-- **Completed:** 3/55 steps
+- **Completed:** 4/55 steps
 - **In Progress:** 0/55 steps
-- **Pending:** 52/55 steps
-- **Completion Percentage:** 5.5%
+- **Pending:** 51/55 steps
+- **Completion Percentage:** 7.3%
 
 ## Next Steps
 
-1. STEP-004: Global Exception Handler Middleware - Core
-2. STEP-005: Global Exception Handler - Production Mode
-3. STEP-006: Exception Handler Extension Methods
+1. STEP-005: Global Exception Handler - Production Mode
+2. STEP-006: Exception Handler Extension Methods
+3. STEP-007: Serilog Configuration Infrastructure
 
 ---
 
