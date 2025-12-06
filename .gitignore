@@ -9,8 +9,13 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
+
+# Bin and Obj folders (at any level)
+**/bin/
+**/obj/
 [Bb]in/
 [Oo]bj/
+
 [Ll]og/
 [Ll]ogs/
 
