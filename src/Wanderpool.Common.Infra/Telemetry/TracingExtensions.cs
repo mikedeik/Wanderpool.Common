@@ -1,7 +1,12 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Instrumentation.Http;
 using OpenTelemetry.Resources;
@@ -26,7 +31,7 @@ public static class TracingExtensions
     /// {
     ///   "OpenTelemetry": {
     ///     "Enabled": true,
-    ///     "OtlpEndpoint": "http://localhost:4317",
+    ///     "Endpoint": "http://localhost:4317",
     ///     "SamplingProbability": 1.0
     ///   }
     /// }
@@ -140,5 +145,190 @@ public static class TracingExtensions
             });
 
         return services;
+    }
+
+    /// <summary>
+    /// Configures OpenTelemetry tracing with Options pattern for configuration.
+    /// Reads configuration from appsettings.json and uses IOptions for dependency injection.
+    /// </summary>
+    /// <param name="services">The service collection to add tracing to.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="serviceName">The name of the service. Defaults to assembly name.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    /// <remarks>
+    /// This method configures OpenTelemetryConfiguration from the "OpenTelemetry" section
+    /// in appsettings.json and uses the Options pattern for dependency injection.
+    ///
+    /// Configuration example:
+    /// {
+    ///   "OpenTelemetry": {
+    ///     "Enabled": true,
+    ///     "Endpoint": "http://localhost:4317",
+    ///     "SamplingProbability": 1.0
+    ///   }
+    /// }
+    /// </remarks>
+    public static IServiceCollection AddWanderpoolTracingWithConfiguration(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string? serviceName = null)
+    {
+        // Configure OpenTelemetryConfiguration from appsettings
+        services.Configure<OpenTelemetryConfiguration>(configuration.GetSection(OpenTelemetryConfiguration.Name));
+
+        // Register the tracing with options
+        services.AddSingleton<IConfigureOptions<TracerProviderBuilder>>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<OpenTelemetryConfiguration>>().Value;
+            return new ConfigureTracerProviderBuilder(options, serviceName);
+        });
+
+        // Add OpenTelemetry with custom configuration
+        services
+            .AddOpenTelemetry()
+            .WithTracing(traceBuilder =>
+            {
+                ConfigureTracingWithOptions(traceBuilder, provider: null, serviceName: serviceName);
+            });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Configures OpenTelemetry tracing with environment-aware exporters using Options pattern.
+    /// </summary>
+    /// <param name="services">The service collection to add tracing to.</param>
+    /// <param name="environment">The host environment for determining which exporters to use.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="serviceName">The name of the service. Defaults to assembly name.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    /// <remarks>
+    /// Configuration varies by environment:
+    /// - Development: Includes Console exporter for debugging + OTLP exporter
+    /// - Production: OTLP exporter only, no debug exporters
+    /// </remarks>
+    public static IServiceCollection AddWanderpoolTracingWithExporters(
+        this IServiceCollection services,
+        IWebHostEnvironment environment,
+        IConfiguration configuration,
+        string? serviceName = null)
+    {
+        // Configure OpenTelemetryConfiguration from appsettings
+        services.Configure<OpenTelemetryConfiguration>(configuration.GetSection(OpenTelemetryConfiguration.Name));
+
+        serviceName ??= Assembly.GetCallingAssembly().GetName().Name ?? "UnknownService";
+        var serviceVersion = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "1.0.0";
+
+        services
+            .AddOpenTelemetry()
+            .WithTracing(traceBuilder =>
+            {
+                var otelOptions = new OpenTelemetryConfiguration();
+                configuration.GetSection(OpenTelemetryConfiguration.Name).Bind(otelOptions);
+
+                traceBuilder
+                    // Set resource name and version
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService(serviceName, serviceVersion: serviceVersion))
+
+                    // Add ASP.NET Core instrumentation
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequest = (activity, request) =>
+                        {
+                            activity.SetTag("http.request.method_original", request.Method);
+                        };
+                        options.EnrichWithHttpResponse = (activity, response) =>
+                        {
+                            activity.SetTag("http.response.status_code", response.StatusCode);
+                        };
+                    })
+
+                    // Add HttpClient instrumentation
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequestMessage = (activity, request) =>
+                        {
+                            activity.SetTag("http.request.uri", request.RequestUri?.ToString());
+                        };
+                        options.EnrichWithHttpResponseMessage = (activity, response) =>
+                        {
+                            activity.SetTag("http.response.status_code", (int)response.StatusCode);
+                        };
+                    });
+
+                // Configure exporters based on environment
+                if (environment.IsDevelopment())
+                {
+                    // Development: Add console exporter for debugging
+                    traceBuilder.AddConsoleExporter();
+                }
+
+                // Always add OTLP exporter (production and development)
+                traceBuilder.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri(otelOptions.Endpoint);
+                });
+
+                // Configure sampling if specified
+                if (otelOptions.SamplingProbability < 1.0)
+                {
+                    traceBuilder.SetSampler(new ParentBasedSampler(
+                        new TraceIdRatioBasedSampler(otelOptions.SamplingProbability)));
+                }
+            });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Helper method to configure tracing with options.
+    /// </summary>
+    private static void ConfigureTracingWithOptions(
+        TracerProviderBuilder traceBuilder,
+        IServiceProvider? provider = null,
+        string? serviceName = null)
+    {
+        serviceName ??= Assembly.GetCallingAssembly().GetName().Name ?? "UnknownService";
+        var serviceVersion = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "1.0.0";
+
+        traceBuilder
+            // Set resource name and version
+            .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                .AddService(serviceName, serviceVersion: serviceVersion))
+
+            // Add ASP.NET Core instrumentation
+            .AddAspNetCoreInstrumentation(options =>
+            {
+                options.RecordException = true;
+            })
+
+            // Add HttpClient instrumentation
+            .AddHttpClientInstrumentation(options =>
+            {
+                options.RecordException = true;
+            });
+    }
+
+    /// <summary>
+    /// Configuration helper for TracerProviderBuilder.
+    /// </summary>
+    private class ConfigureTracerProviderBuilder : IConfigureOptions<TracerProviderBuilder>
+    {
+        private readonly OpenTelemetryConfiguration _options;
+        private readonly string? _serviceName;
+
+        public ConfigureTracerProviderBuilder(OpenTelemetryConfiguration options, string? serviceName)
+        {
+            _options = options;
+            _serviceName = serviceName;
+        }
+
+        public void Configure(TracerProviderBuilder builder)
+        {
+            ConfigureTracingWithOptions(builder, serviceName: _serviceName);
+        }
     }
 }
