@@ -43,6 +43,7 @@ public class CorrelationIdTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddHttpContextAccessor();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<CorrelationIdMiddleware>();
@@ -52,15 +53,15 @@ public class CorrelationIdTests
             return Results.Ok(correlationId);
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
         Assert.NotNull(content);
         Assert.True(!string.IsNullOrEmpty(content));
         // Content should be a GUID string
@@ -74,6 +75,7 @@ public class CorrelationIdTests
         var correlationId = "test-correlation-123";
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddHttpContextAccessor();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<CorrelationIdMiddleware>();
@@ -83,8 +85,8 @@ public class CorrelationIdTests
             return Results.Ok(id);
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Correlation-Id", correlationId);
 
         // Act
@@ -92,7 +94,7 @@ public class CorrelationIdTests
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
         Assert.Contains(correlationId, content);
     }
 
@@ -103,13 +105,14 @@ public class CorrelationIdTests
         var correlationId = "test-correlation-456";
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddHttpContextAccessor();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.MapGet("/test", () => Results.Ok());
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Correlation-Id", correlationId);
 
         // Act
@@ -155,6 +158,7 @@ public class CorrelationIdTests
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddWanderpoolCorrelationId();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<CorrelationIdMiddleware>();
@@ -163,15 +167,15 @@ public class CorrelationIdTests
             return Results.Ok(new { correlationContext.CorrelationId });
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
         Assert.NotNull(content);
         Assert.True(!string.IsNullOrEmpty(content));
         Assert.Contains("correlationId", content);
@@ -183,20 +187,21 @@ public class CorrelationIdTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddHttpContextAccessor();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.MapGet("/test", () => Results.Ok("success"));
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert
-        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
         Assert.Equal("\"success\"", content);
     }
 
@@ -206,6 +211,7 @@ public class CorrelationIdTests
         // Arrange
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddHttpContextAccessor();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<CorrelationIdMiddleware>();
@@ -215,8 +221,8 @@ public class CorrelationIdTests
             return Results.Ok(correlationId);
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response1 = await client.GetAsync("/test");
@@ -236,6 +242,7 @@ public class CorrelationIdTests
         var providedId = "provided-id-789";
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddHttpContextAccessor();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<CorrelationIdMiddleware>();
@@ -245,8 +252,8 @@ public class CorrelationIdTests
             return Results.Ok(correlationId);
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Correlation-Id", providedId);
 
         // Act

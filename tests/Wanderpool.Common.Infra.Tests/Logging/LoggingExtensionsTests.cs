@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Wanderpool.Common.Infra.Logging;
 
@@ -60,12 +62,11 @@ public class LoggingExtensionsTests
         var builder = WebApplication.CreateBuilder();
 
         // Act
-        var result = builder
-            .AddWanderpoolLogging("TestService")
-            .ConfigureServices(services => services.AddLogging());
+        builder.AddWanderpoolLogging("TestService");
+        builder.Services.AddLogging();
 
         // Assert
-        Assert.NotNull(result);
+        Assert.NotNull(builder);
     }
 
     [Fact]
@@ -111,7 +112,7 @@ public class LoggingExtensionsTests
         var app = builder.Build();
 
         // Assert
-        Assert.True(app.Environment.IsDevelopment());
+        Assert.True(builder.Environment.IsDevelopment());
         Assert.NotNull(app);
     }
 
@@ -127,7 +128,7 @@ public class LoggingExtensionsTests
         var app = builder.Build();
 
         // Assert
-        Assert.True(app.Environment.IsProduction());
+        Assert.True(builder.Environment.IsProduction());
         Assert.NotNull(app);
     }
 
@@ -184,7 +185,7 @@ public class LoggingExtensionsTests
         var action = () =>
         {
             builder.AddWanderpoolLogging("Service1");
-            builder.ConfigureServices(services => services.AddLogging());
+            builder.Services.AddLogging();
             builder.AddWanderpoolLogging("Service2");
         };
 

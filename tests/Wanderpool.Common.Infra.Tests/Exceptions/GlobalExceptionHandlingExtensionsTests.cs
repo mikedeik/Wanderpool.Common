@@ -29,19 +29,20 @@ public class GlobalExceptionHandlingExtensionsTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseWanderpoolExceptionHandling();
-        app.MapGet("/error", () => throw new InvalidOperationException("Test error"));
+        app.MapGet("/error", () => { throw new InvalidOperationException("Test error"); });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/error");
 
         // Assert
-        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
+        Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -58,19 +59,20 @@ public class GlobalExceptionHandlingExtensionsTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseWanderpoolExceptionHandling();
         app.MapGet("/success", () => "Hello World");
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/success");
 
         // Assert
-        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal("\"Hello World\"", content);
     }
@@ -80,20 +82,21 @@ public class GlobalExceptionHandlingExtensionsTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         // Act - calling it multiple times should not cause issues
         app.UseWanderpoolExceptionHandling();
         app.UseWanderpoolExceptionHandling();
 
-        app.MapGet("/test", () => throw new InvalidOperationException("Error"));
+        app.MapGet("/test", () => { throw new InvalidOperationException("Error"); });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Assert
         var response = await client.GetAsync("/test");
-        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
+        Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
     }
 
     [Fact]
@@ -118,6 +121,7 @@ public class GlobalExceptionHandlingExtensionsTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseWanderpoolExceptionHandling();
@@ -130,14 +134,14 @@ public class GlobalExceptionHandlingExtensionsTests
             throw new ValidationException(errors);
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/validate");
 
         // Assert
-        Assert.Equal(StatusCodes.Status400BadRequest, response.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -150,6 +154,7 @@ public class GlobalExceptionHandlingExtensionsTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseWanderpoolExceptionHandling();
@@ -158,14 +163,14 @@ public class GlobalExceptionHandlingExtensionsTests
             throw new NotFoundException("User", "123");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/notfound");
 
         // Assert
-        Assert.Equal(StatusCodes.Status404NotFound, response.StatusCode);
+        Assert.Equal(StatusCodes.Status404NotFound, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -178,13 +183,14 @@ public class GlobalExceptionHandlingExtensionsTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseWanderpoolExceptionHandling();
-        app.MapGet("/error", () => throw new InvalidOperationException("Test"));
+        app.MapGet("/error", () => { throw new InvalidOperationException("Test"); });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/error");
@@ -199,13 +205,14 @@ public class GlobalExceptionHandlingExtensionsTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseWanderpoolExceptionHandling();
-        app.MapGet("/error", () => throw new Exception("Test error"));
+        app.MapGet("/error", () => { throw new Exception("Test error"); });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/error");
@@ -222,13 +229,14 @@ public class GlobalExceptionHandlingExtensionsTests
     {
         // Arrange - 5xx error
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseWanderpoolExceptionHandling();
-        app.MapGet("/error", () => throw new Exception("Internal error"));
+        app.MapGet("/error", () => { throw new Exception("Internal error"); });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/error");

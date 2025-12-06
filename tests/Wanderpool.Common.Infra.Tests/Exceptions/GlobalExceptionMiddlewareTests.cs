@@ -16,6 +16,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -28,14 +29,14 @@ public class GlobalExceptionMiddlewareTests
             throw new ValidationException(errors);
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status400BadRequest, response.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -52,6 +53,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -60,14 +62,14 @@ public class GlobalExceptionMiddlewareTests
             throw new UnauthorizedAccessException("Access denied.");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status401Unauthorized, response.StatusCode);
+        Assert.Equal(StatusCodes.Status401Unauthorized, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -82,6 +84,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -90,14 +93,14 @@ public class GlobalExceptionMiddlewareTests
             throw new ForbiddenException("You do not have permission to access this resource.");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status403Forbidden, response.StatusCode);
+        Assert.Equal(StatusCodes.Status403Forbidden, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -112,6 +115,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -120,14 +124,14 @@ public class GlobalExceptionMiddlewareTests
             throw new NotFoundException("User", "123");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status404NotFound, response.StatusCode);
+        Assert.Equal(StatusCodes.Status404NotFound, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -142,6 +146,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -150,14 +155,14 @@ public class GlobalExceptionMiddlewareTests
             throw new ConflictException("This resource already exists with a different version.", "resource-123");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status409Conflict, response.StatusCode);
+        Assert.Equal(StatusCodes.Status409Conflict, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -172,6 +177,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -180,14 +186,14 @@ public class GlobalExceptionMiddlewareTests
             throw new OperationCanceledException("Operation was cancelled.");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status499ClientClosedRequest, response.StatusCode);
+        Assert.Equal(StatusCodes.Status499ClientClosedRequest, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -202,6 +208,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -210,14 +217,14 @@ public class GlobalExceptionMiddlewareTests
             throw new RemoteServiceException(500, "Remote service error");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status502BadGateway, response.StatusCode);
+        Assert.Equal(StatusCodes.Status502BadGateway, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -232,6 +239,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -240,14 +248,14 @@ public class GlobalExceptionMiddlewareTests
             throw new InvalidOperationException("Something went wrong.");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
+        Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -262,6 +270,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -270,8 +279,8 @@ public class GlobalExceptionMiddlewareTests
             throw new InvalidOperationException("Test error");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
@@ -290,6 +299,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -298,8 +308,8 @@ public class GlobalExceptionMiddlewareTests
             throw new InvalidOperationException("Test error");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
@@ -314,19 +324,20 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
         app.MapGet("/test", () => "Success");
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status200OK, response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal("\"Success\"", content);
     }
@@ -336,6 +347,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -344,8 +356,8 @@ public class GlobalExceptionMiddlewareTests
             throw new InvalidOperationException("Server error");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
@@ -361,16 +373,17 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
         app.MapGet("/test", () =>
         {
-            throw new NotFoundException("Not found", "Resource", "123");
+            throw new NotFoundException("Resource", "123");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
@@ -386,6 +399,7 @@ public class GlobalExceptionMiddlewareTests
     {
         // Arrange
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -394,14 +408,14 @@ public class GlobalExceptionMiddlewareTests
             throw new BusinessRuleException("MinimumAge", "User must be at least 18 years old.");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
+        Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -417,6 +431,7 @@ public class GlobalExceptionMiddlewareTests
         // Arrange
         var args = new[] { "--environment=Production" };
         var builder = WebApplication.CreateBuilder(args);
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -425,14 +440,14 @@ public class GlobalExceptionMiddlewareTests
             throw new InvalidOperationException("Sensitive internal error details: Database connection string exposed!");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
+        Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -448,6 +463,7 @@ public class GlobalExceptionMiddlewareTests
         // Arrange
         var args = new[] { "--environment=Development" };
         var builder = WebApplication.CreateBuilder(args);
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -456,14 +472,14 @@ public class GlobalExceptionMiddlewareTests
             throw new InvalidOperationException("Detailed error message for debugging.");
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status500InternalServerError, response.StatusCode);
+        Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
@@ -478,6 +494,7 @@ public class GlobalExceptionMiddlewareTests
         // Arrange
         var args = new[] { "--environment=Production" };
         var builder = WebApplication.CreateBuilder(args);
+        builder.WebHost.UseTestServer();
         var app = builder.Build();
 
         app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -489,14 +506,14 @@ public class GlobalExceptionMiddlewareTests
             });
         });
 
-        var server = new TestServer(app);
-        var client = server.CreateClient();
+        await app.StartAsync();
+        var client = app.GetTestClient();
 
         // Act
         var response = await client.GetAsync("/test");
 
         // Assert
-        Assert.Equal(StatusCodes.Status400BadRequest, response.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
 
