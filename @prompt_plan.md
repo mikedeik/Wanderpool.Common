@@ -292,7 +292,37 @@ This document tracks the completion status of implementation steps from the Wand
 
 ### STEP-014: OpenTelemetry Metrics - Basic Setup
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-07
+
+**Deliverables:**
+- ✅ `MetricsConfiguration.cs` - Configuration class for metrics setup with appsettings.json binding
+- ✅ `MetricsExtensions.cs` - Three overloaded AddWanderpoolMetrics methods for flexible registration
+- ✅ `MetricsExtensionsTests.cs` - 14 comprehensive test cases
+
+**Implementation Details:**
+- MetricsConfiguration properties: Enabled, EnableAspNetCoreMetrics, EnableHttpClientMetrics, EnableRuntimeMetrics (bool), OtlpEndpoint (string), ExportIntervalSeconds (int), MaxMetricsBufferSize (int)
+- Three registration patterns:
+  * Default: `AddWanderpoolMetrics()` - auto-detects service name, uses localhost:4317
+  * Custom endpoint: `AddWanderpoolMetrics(otlpEndpoint)` - custom OTLP endpoint
+  * Configuration-driven: `AddWanderpoolMetricsWithConfiguration(config)` - full configuration support
+- Configures ASP.NET Core, HttpClient, and Runtime instrumentation with AddOtlpExporter()
+- All metrics export to OTLP endpoint
+- Service name auto-detection from calling assembly
+- Configuration binding from "OpenTelemetryMetrics" section in appsettings.json
+
+**Test Coverage:**
+- 14 new tests for metrics configuration and registration
+- Default registration with MeterProvider service registration
+- Method chaining support
+- Custom service names and OTLP endpoints
+- Configuration-based setup with various metric combinations (all enabled, individual types)
+- Disabled metrics handling (returns services without registration)
+- Configuration binding from in-memory appsettings
+- Default configuration values verification
+- All 135 existing tests still passing
+- Build successful with no compilation errors
 
 ### STEP-015: Custom HTTP Client Metrics
 
@@ -478,16 +508,16 @@ This document tracks the completion status of implementation steps from the Wand
 
 ## Summary
 
-- **Completed:** 13/55 steps
+- **Completed:** 14/55 steps
 - **In Progress:** 0/55 steps
-- **Pending:** 42/55 steps
-- **Completion Percentage:** 24%
+- **Pending:** 41/55 steps
+- **Completion Percentage:** 25.5%
 
 ## Next Steps
 
-1. STEP-014: OpenTelemetry Metrics - Basic Setup
-2. STEP-015: Custom HTTP Client Metrics
-3. STEP-016: HTTP Client Metrics Handler
+1. STEP-015: Custom HTTP Client Metrics
+2. STEP-016: HTTP Client Metrics Handler
+3. STEP-017: Circuit Breaker State Metrics
 
 ---
 
