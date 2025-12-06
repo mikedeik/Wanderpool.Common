@@ -197,7 +197,23 @@ This document tracks the completion status of implementation steps from the Wand
 
 ### STEP-011: OpenTelemetry Tracing - Basic Setup
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-06
+
+**Deliverables:**
+- ✅ `TracingExtensions.cs` - Two extension methods for OpenTelemetry configuration
+- ✅ `TracingExtensionsTests.cs` - Comprehensive test suite with 18 tests
+
+**Implementation Details:**
+- Two AddWanderpoolTracing() overloads for flexible configuration
+- Default overload: auto-detects service name/version from assembly, uses localhost:4317 for OTLP
+- Custom overload: supports custom OTLP endpoint and sampling probability (0.0-1.0)
+- Validates sampling probability is within valid range (0.0-1.0)
+- Configures ASP.NET Core instrumentation with request/response enrichment
+- Configures HttpClient instrumentation with URI and status code enrichment
+- W3C TraceContext propagation support
+- Resource builder setup with service name and version from assembly
 
 ### STEP-012: OpenTelemetry Tracing - Exporters
 
@@ -395,16 +411,16 @@ This document tracks the completion status of implementation steps from the Wand
 
 ## Summary
 
-- **Completed:** 10/55 steps
+- **Completed:** 11/55 steps
 - **In Progress:** 0/55 steps
-- **Pending:** 45/55 steps
-- **Completion Percentage:** 18.2%
+- **Pending:** 44/55 steps
+- **Completion Percentage:** 20%
 
 ## Next Steps
 
-1. STEP-011: OpenTelemetry Tracing - Basic Setup
-2. STEP-012: OpenTelemetry Tracing - Exporters
-3. STEP-013: OpenTelemetry Tracing - Enrichment
+1. STEP-012: OpenTelemetry Tracing - Exporters
+2. STEP-013: OpenTelemetry Tracing - Enrichment
+3. STEP-014: OpenTelemetry Metrics - Basic Setup
 
 ---
 
