@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Wanderpool.Common.Clients.Exceptions;
+using Wanderpool.Common.Infra.Clients.Exceptions;
 using Wanderpool.Common.Contracts.ApiResponse;
 
 namespace Wanderpool.Common.Infra.Exceptions;

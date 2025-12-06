@@ -12,14 +12,19 @@
       <PackageReference Include="OpenTelemetry" Version="1.14.0" />
       <PackageReference Include="OpenTelemetry.Api" Version="1.14.0" />
       <PackageReference Include="OpenTelemetry.Api.ProviderBuilderExtensions" Version="1.14.0" />
-      <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
-      <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
-      <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
+      <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
+      <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
       <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
       <PackageReference Include="Serilog.Sinks.Console" Version="5.0.0" />
       <PackageReference Include="Serilog.Enrichers.Environment" Version="2.3.0" />
       <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
       <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="../Wanderpool.Common.Contracts/Wanderpool.Common.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

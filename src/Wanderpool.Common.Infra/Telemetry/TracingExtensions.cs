@@ -43,7 +43,7 @@ public static class TracingExtensions
         serviceName ??= Assembly.GetCallingAssembly().GetName().Name ?? "UnknownService";
         var serviceVersion = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "1.0.0";
 
-        var tracingBuilder = services
+        services
             .AddOpenTelemetry()
             .WithTracing(traceBuilder =>
             {
