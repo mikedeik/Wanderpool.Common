@@ -1,6 +1,15 @@
 # Development Practices and Patterns
-
 This document outlines best practices and patterns used in the Wanderpool.Common project.
+
+## Commands and contants used
+```gdscript
+dotnet build ProjectName
+```
+```gdscript
+dotnet test ProjectName
+```
+
+.NET 10 SDK is located in C:\Users\miked\.dotnet\sdk
 
 ## Configuration Management: The Options Pattern
 
