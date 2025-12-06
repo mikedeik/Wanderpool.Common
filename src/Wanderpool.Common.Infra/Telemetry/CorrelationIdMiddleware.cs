@@ -42,10 +42,6 @@ public class CorrelationIdMiddleware
         // Add to response headers
         context.Response.Headers.Add(CorrelationIdHeaderName, correlationId);
 
-        // Register in DI container for this request
-        var correlationContext = new CorrelationContext(correlationId);
-        context.RequestServices.GetRequiredService<IServiceCollection>();
-
         await _next(context);
     }
 

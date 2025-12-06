@@ -24,7 +24,7 @@ public class WanderpoolExceptionTests
     public void Constructor_ThrowsArgumentNullException_WhenErrorCodeIsNull()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new WanderpoolException(null!, "message"));
+        var exception = Assert.Throws<ArgumentNullException>(() => new WanderpoolException(null!, "message"));
         Assert.NotNull(exception);
     }
 

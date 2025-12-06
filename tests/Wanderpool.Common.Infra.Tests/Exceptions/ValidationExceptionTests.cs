@@ -112,7 +112,7 @@ public class ValidationExceptionTests
         var exception = new ValidationException(errors);
 
         // Assert
-        Assert.Contains("validation", exception.Message);
+        Assert.Contains("Validation", exception.Message);
         Assert.NotNull(exception.Message);
         Assert.True(exception.Message.Length > 0);
     }

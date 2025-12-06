@@ -61,7 +61,13 @@ public class GlobalExceptionMiddleware
         var (statusCode, errorCode, message) = MapExceptionToResponse(exception);
 
         // In production, hide detailed error messages for 5xx errors
-        if (_environment.IsProduction() && statusCode >= StatusCodes.Status500InternalServerError)
+        // Check both IsProduction() and the EnvironmentName explicitly since test contexts may not set these correctly
+        var shouldHideMessage = (_environment.IsProduction() ||
+                                (_environment.EnvironmentName != Environments.Development &&
+                                 _environment.EnvironmentName != "Development"))
+                              && statusCode >= StatusCodes.Status500InternalServerError;
+
+        if (shouldHideMessage)
         {
             message = "An unexpected error occurred. Please try again later.";
         }

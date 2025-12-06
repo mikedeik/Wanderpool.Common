@@ -44,7 +44,8 @@ public class GlobalExceptionHandlingExtensionsTests
         // Assert
         Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
-        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content, options);
 
         Assert.NotNull(envelope);
         Assert.False(envelope.IsSuccess);
@@ -74,7 +75,7 @@ public class GlobalExceptionHandlingExtensionsTests
         // Assert
         Assert.Equal(StatusCodes.Status200OK, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
-        Assert.Equal("\"Hello World\"", content);
+        Assert.Equal("Hello World", content);
     }
 
     [Fact]
@@ -143,7 +144,8 @@ public class GlobalExceptionHandlingExtensionsTests
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
-        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content, options);
 
         Assert.NotNull(envelope);
         Assert.Equal("VALIDATION_ERROR", envelope.Error.Code);
@@ -172,7 +174,8 @@ public class GlobalExceptionHandlingExtensionsTests
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, (int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
-        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content, options);
 
         Assert.NotNull(envelope);
         Assert.Equal("NOT_FOUND", envelope.Error.Code);
@@ -217,7 +220,8 @@ public class GlobalExceptionHandlingExtensionsTests
         // Act
         var response = await client.GetAsync("/error");
         var content = await response.Content.ReadAsStringAsync();
-        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content, options);
 
         // Assert
         Assert.NotNull(envelope.TraceId);
@@ -241,7 +245,8 @@ public class GlobalExceptionHandlingExtensionsTests
         // Act
         var response = await client.GetAsync("/error");
         var content = await response.Content.ReadAsStringAsync();
-        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content, options);
 
         // Assert
         Assert.Equal(ApiResponseErrorLevel.Error, envelope.Error.Level);
