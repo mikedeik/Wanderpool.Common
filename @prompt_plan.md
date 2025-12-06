@@ -110,7 +110,20 @@ This document tracks the completion status of implementation steps from the Wand
 
 ### STEP-006: Exception Handler Extension Methods
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-06
+
+**Deliverables:**
+- ✅ `GlobalExceptionHandlingExtensions.cs` - Extension method for middleware registration
+- ✅ `GlobalExceptionHandlingExtensionsTests.cs` - Comprehensive test suite with 10 tests
+  - Tests: Registration, exception handling, request pass-through, method chaining, exception types, content type, TraceId, error levels
+
+**Implementation Details:**
+- `UseWanderpoolExceptionHandling()` extension method on WebApplication
+- Fluent API supporting method chaining
+- Returns WebApplication for integration in pipeline configuration
+- Integrates seamlessly with GlobalExceptionMiddleware from previous steps
 
 ### STEP-007: Serilog Configuration Infrastructure
 
@@ -332,16 +345,16 @@ This document tracks the completion status of implementation steps from the Wand
 
 ## Summary
 
-- **Completed:** 5/55 steps
+- **Completed:** 6/55 steps
 - **In Progress:** 0/55 steps
-- **Pending:** 50/55 steps
-- **Completion Percentage:** 9.1%
+- **Pending:** 49/55 steps
+- **Completion Percentage:** 10.9%
 
 ## Next Steps
 
-1. STEP-006: Exception Handler Extension Methods
-2. STEP-007: Serilog Configuration Infrastructure
-3. STEP-008: Correlation ID Context Service
+1. STEP-007: Serilog Configuration Infrastructure
+2. STEP-008: Correlation ID Context Service
+3. STEP-009: Correlation ID Middleware
 
 ---
 
