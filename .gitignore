@@ -25,7 +25,7 @@ bld/
 
 # Rider
 .idea/
-**/.ieda/
+**/.idea/
 *.sln.iml
 *.DotSettings.user
 
