@@ -18,6 +18,22 @@
           }
         }
       },
+      "Microsoft.AspNetCore.TestHost/10.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.AspNetCore.TestHost.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.AspNetCore.TestHost.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "Microsoft.CodeCoverage/17.12.0": {
         "type": "package",
         "compile": {
@@ -1141,6 +1157,22 @@
         "lib/netstandard2.1/FluentAssertions.dll",
         "lib/netstandard2.1/FluentAssertions.pdb",
         "lib/netstandard2.1/FluentAssertions.xml"
+      ]
+    },
+    "Microsoft.AspNetCore.TestHost/10.0.0": {
+      "sha512": "Q3ia+k+wYM3Iv/Qq5IETOdpz/R0xizs3WNAXz699vEQx5TMVAfG715fBSq9Thzopvx8dYZkxQ/mumTn6AJ/vGQ==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.testhost/10.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net10.0/Microsoft.AspNetCore.TestHost.dll",
+        "lib/net10.0/Microsoft.AspNetCore.TestHost.xml",
+        "microsoft.aspnetcore.testhost.10.0.0.nupkg.sha512",
+        "microsoft.aspnetcore.testhost.nuspec"
       ]
     },
     "Microsoft.CodeCoverage/17.12.0": {
@@ -2654,6 +2686,7 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "FluentAssertions >= 6.12.2",
+      "Microsoft.AspNetCore.TestHost >= 10.0.0",
       "Microsoft.NET.Test.Sdk >= 17.12.0",
       "Wanderpool.Common.Infra >= 1.0.0",
       "xunit >= 2.9.2",
@@ -2711,6 +2744,10 @@
           "FluentAssertions": {
             "target": "Package",
             "version": "[6.12.2, )"
+          },
+          "Microsoft.AspNetCore.TestHost": {
+            "target": "Package",
+            "version": "[10.0.0, )"
           },
           "Microsoft.NET.Test.Sdk": {
             "target": "Package",

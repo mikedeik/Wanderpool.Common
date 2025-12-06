@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "/1Ed+ZN/m9s=",
+  "dgSpecHash": "eQEZq5iHZCs=",
   "success": true,
   "projectFilePath": "D:\\Projects\\Rider\\Wanderpool.Common\\tests\\Wanderpool.Common.Infra.Tests\\Wanderpool.Common.Infra.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\miked\\.nuget\\packages\\fluentassertions\\6.12.2\\fluentassertions.6.12.2.nupkg.sha512",
+    "C:\\Users\\miked\\.nuget\\packages\\microsoft.aspnetcore.testhost\\10.0.0\\microsoft.aspnetcore.testhost.10.0.0.nupkg.sha512",
     "C:\\Users\\miked\\.nuget\\packages\\microsoft.codecoverage\\17.12.0\\microsoft.codecoverage.17.12.0.nupkg.sha512",
     "C:\\Users\\miked\\.nuget\\packages\\microsoft.extensions.ambientmetadata.application\\10.0.0\\microsoft.extensions.ambientmetadata.application.10.0.0.nupkg.sha512",
     "C:\\Users\\miked\\.nuget\\packages\\microsoft.extensions.compliance.abstractions\\10.0.0\\microsoft.extensions.compliance.abstractions.10.0.0.nupkg.sha512",

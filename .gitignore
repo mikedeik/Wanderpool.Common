@@ -1,0 +1,109 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+
+# Rider
+.idea/
+*.sln.iml
+*.DotSettings.user
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Test Results
+[Tt]estResults/
+*.trx
+*.coverage
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+
+# Output directory
+out/
+
+# macOS
+.DS_Store
+
+# Linux
+.vscode-server/
+
+# Rider settings
+.idea_modules/
+*.DotSettings
+
+# Build log files
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# NuGet v3+ lockfile
+.lock.json
+
+# Miscellaneous
+.classpath
+.c9/
+*.class
+*.log
+*.pot
+*.rej
+*.swo
+*~
+.#*
+
+# IDE
+.vscode/
+.settings/
+.project
+.classpath
+*.code-workspace
+
+# OS files
+Thumbs.db
+
+# npm / node (if applicable)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Package manager
+packages/
+
+# Custom local settings
+*.local.json
+
+# Coverage
+*.coverage
+coverage/
+opencover/
+
+# Temp files
+temp/
+tmp/
+*.tmp
