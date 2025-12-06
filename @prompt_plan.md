@@ -146,15 +146,50 @@ This document tracks the completion status of implementation steps from the Wand
 
 ### STEP-008: Correlation ID Context Service
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-06
+
+**Deliverables:**
+- ✅ `ICorrelationContext.cs` - Interface for correlation ID access
+- ✅ `CorrelationContext.cs` - Implementation with validation
+
+**Implementation Details:**
+- Service interface for DI-based correlation ID access
+- Thread-safe implementation
+- Validation for null/empty IDs
 
 ### STEP-009: Correlation ID Middleware
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-06
+
+**Deliverables:**
+- ✅ `CorrelationIdMiddleware.cs` - Request processing middleware
+
+**Implementation Details:**
+- Extracts X-Correlation-Id from request headers
+- Generates new GUID IDs when not provided
+- Stores in HttpContext.Items for downstream access
+- Adds to response headers for client tracking
 
 ### STEP-010: Correlation ID Serilog Enricher
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-06
+
+**Deliverables:**
+- ✅ `CorrelationIdEnricher.cs` - Serilog log enrichment
+- ✅ `CorrelationIdExtensions.cs` - Service/middleware extensions
+- ✅ `CorrelationIdTests.cs` - 10 comprehensive test cases
+
+**Implementation Details:**
+- Automatic enrichment of all log entries with correlation ID
+- AddWanderpoolCorrelationId() service registration
+- UseWanderpoolCorrelationId() middleware registration
+- Full DI integration with IHttpContextAccessor
 
 ---
 
@@ -360,16 +395,16 @@ This document tracks the completion status of implementation steps from the Wand
 
 ## Summary
 
-- **Completed:** 7/55 steps
+- **Completed:** 10/55 steps
 - **In Progress:** 0/55 steps
-- **Pending:** 48/55 steps
-- **Completion Percentage:** 12.7%
+- **Pending:** 45/55 steps
+- **Completion Percentage:** 18.2%
 
 ## Next Steps
 
-1. STEP-008: Correlation ID Context Service
-2. STEP-009: Correlation ID Middleware
-3. STEP-010: Correlation ID Serilog Enricher
+1. STEP-011: OpenTelemetry Tracing - Basic Setup
+2. STEP-012: OpenTelemetry Tracing - Exporters
+3. STEP-013: OpenTelemetry Tracing - Enrichment
 
 ---
 
