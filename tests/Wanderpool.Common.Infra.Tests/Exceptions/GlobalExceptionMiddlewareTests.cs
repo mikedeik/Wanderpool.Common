@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Wanderpool.Common.Clients.Exceptions;
+using Wanderpool.Common.Infra.Clients.Exceptions;
 using Wanderpool.Common.Contracts.ApiResponse;
 using Wanderpool.Common.Infra.Exceptions;
 
