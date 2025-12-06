@@ -2,8 +2,7 @@
 
 public record OperationResult(bool IsSuccess, OperationResultError? Error)
 {
-
-
+    
     public static OperationResult Fail(OperationResultError error)
     {
         return new OperationResult(false, error);
