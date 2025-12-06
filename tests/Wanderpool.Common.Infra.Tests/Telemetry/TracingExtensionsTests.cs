@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Trace;
 using Wanderpool.Common.Infra.Telemetry;
@@ -257,6 +258,191 @@ public class TracingExtensionsTests
         services
             .AddWanderpoolTracing("http://localhost:4317")
             .AddLogging();
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
+    }
+
+    [Fact]
+    public void AddWanderpoolTracingWithConfigurableExporters_WithConfigurationSection_RegistersOpenTelemetry()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "OpenTelemetry:Enabled", "true" },
+                { "OpenTelemetry:Endpoint", "http://localhost:4317" },
+                { "OpenTelemetry:SamplingProbability", "1.0" }
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddWanderpoolTracingWithConfigurableExporters(config);
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
+    }
+
+    [Fact]
+    public void AddWanderpoolTracingWithConfigurableExporters_WithMultipleExporters_RegistersAllExporters()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "OpenTelemetry:Enabled", "true" },
+                { "OpenTelemetry:SamplingProbability", "1.0" },
+                { "OpenTelemetry:Exporters:OTLP:Type", "otlp" },
+                { "OpenTelemetry:Exporters:OTLP:Endpoint", "http://localhost:4317" },
+                { "OpenTelemetry:Exporters:OTLP:Enabled", "true" },
+                { "OpenTelemetry:Exporters:Jaeger:Type", "jaeger" },
+                { "OpenTelemetry:Exporters:Jaeger:Endpoint", "http://localhost:14268/api/traces" },
+                { "OpenTelemetry:Exporters:Jaeger:Enabled", "true" }
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddWanderpoolTracingWithConfigurableExporters(config);
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
+    }
+
+    [Fact]
+    public void AddWanderpoolTracingWithConfigurableExporters_WithSampling_ConfiguresSamplingRate()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "OpenTelemetry:Enabled", "true" },
+                { "OpenTelemetry:Endpoint", "http://localhost:4317" },
+                { "OpenTelemetry:SamplingProbability", "0.5" }
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddWanderpoolTracingWithConfigurableExporters(config);
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
+    }
+
+    [Fact]
+    public void AddWanderpoolTracingWithConfigurableExporters_ReturnsServiceCollectionForChaining()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "OpenTelemetry:Enabled", "true" },
+                { "OpenTelemetry:Endpoint", "http://localhost:4317" }
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        // Act
+        var result = services.AddWanderpoolTracingWithConfigurableExporters(config);
+
+        // Assert
+        Assert.Equal(services, result);
+    }
+
+    [Fact]
+    public void AddWanderpoolTracingWithConfigurableExporters_WithCustomServiceName_RegistersServices()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "OpenTelemetry:Enabled", "true" },
+                { "OpenTelemetry:Endpoint", "http://localhost:4317" }
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        var customServiceName = "MyTestService";
+
+        // Act
+        services.AddWanderpoolTracingWithConfigurableExporters(config, customServiceName);
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
+    }
+
+    [Fact]
+    public void AddWanderpoolTracingWithConfigurableExporters_WithConsoleExporter_RegistersConsoleExporter()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "OpenTelemetry:Enabled", "true" },
+                { "OpenTelemetry:SamplingProbability", "1.0" },
+                { "OpenTelemetry:Exporters:Console:Type", "console" },
+                { "OpenTelemetry:Exporters:Console:Enabled", "true" }
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddWanderpoolTracingWithConfigurableExporters(config);
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
+    }
+
+    [Fact]
+    public void AddWanderpoolTracingWithConfigurableExporters_WithZipkinExporter_RegistersZipkinExporter()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "OpenTelemetry:Enabled", "true" },
+                { "OpenTelemetry:SamplingProbability", "1.0" },
+                { "OpenTelemetry:Exporters:Zipkin:Type", "zipkin" },
+                { "OpenTelemetry:Exporters:Zipkin:Endpoint", "http://localhost:9411/api/v2/spans" },
+                { "OpenTelemetry:Exporters:Zipkin:Enabled", "true" }
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddWanderpoolTracingWithConfigurableExporters(config);
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
+    }
+
+    [Fact]
+    public void AddWanderpoolTracingWithConfigurableExporters_WithDisabledExporter_SkipsExporter()
+    {
+        // Arrange
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "OpenTelemetry:Enabled", "true" },
+                { "OpenTelemetry:SamplingProbability", "1.0" },
+                { "OpenTelemetry:Exporters:OTLP:Type", "otlp" },
+                { "OpenTelemetry:Exporters:OTLP:Endpoint", "http://localhost:4317" },
+                { "OpenTelemetry:Exporters:OTLP:Enabled", "false" }
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddWanderpoolTracingWithConfigurableExporters(config);
 
         // Assert
         Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));

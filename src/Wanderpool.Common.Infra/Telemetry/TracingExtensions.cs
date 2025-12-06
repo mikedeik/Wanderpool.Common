@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
@@ -310,6 +311,104 @@ public static class TracingExtensions
             {
                 options.RecordException = true;
             });
+    }
+
+    /// <summary>
+    /// Configures OpenTelemetry tracing with configurable exporters from appsettings.json.
+    /// Supports multiple exporters: OTLP, Jaeger, Zipkin, and Console.
+    /// </summary>
+    /// <param name="services">The service collection to add tracing to.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="serviceName">The name of the service. Defaults to assembly name.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    /// <remarks>
+    /// Configuration example for multiple exporters:
+    /// {
+    ///   "OpenTelemetry": {
+    ///     "Enabled": true,
+    ///     "SamplingProbability": 1.0,
+    ///     "Exporters": {
+    ///       "OTLP": {
+    ///         "Type": "otlp",
+    ///         "Endpoint": "http://localhost:4317",
+    ///         "Enabled": true
+    ///       },
+    ///       "Jaeger": {
+    ///         "Type": "jaeger",
+    ///         "Endpoint": "http://localhost:14268/api/traces",
+    ///         "Enabled": true
+    ///       },
+    ///       "Console": {
+    ///         "Type": "console",
+    ///         "Enabled": false
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// </remarks>
+    public static IServiceCollection AddWanderpoolTracingWithConfigurableExporters(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string? serviceName = null)
+    {
+        // Configure OpenTelemetryConfiguration from appsettings
+        services.Configure<OpenTelemetryConfiguration>(configuration.GetSection(OpenTelemetryConfiguration.Name));
+
+        serviceName ??= Assembly.GetCallingAssembly().GetName().Name ?? "UnknownService";
+        var serviceVersion = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "1.0.0";
+
+        services
+            .AddOpenTelemetry()
+            .WithTracing(traceBuilder =>
+            {
+                var otelOptions = new OpenTelemetryConfiguration();
+                configuration.GetSection(OpenTelemetryConfiguration.Name).Bind(otelOptions);
+
+                traceBuilder
+                    // Set resource name and version
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService(serviceName, serviceVersion: serviceVersion))
+
+                    // Add ASP.NET Core instrumentation
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequest = (activity, request) =>
+                        {
+                            activity.SetTag("http.request.method_original", request.Method);
+                        };
+                        options.EnrichWithHttpResponse = (activity, response) =>
+                        {
+                            activity.SetTag("http.response.status_code", response.StatusCode);
+                        };
+                    })
+
+                    // Add HttpClient instrumentation
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequestMessage = (activity, request) =>
+                        {
+                            activity.SetTag("http.request.uri", request.RequestUri?.ToString());
+                        };
+                        options.EnrichWithHttpResponseMessage = (activity, response) =>
+                        {
+                            activity.SetTag("http.response.status_code", (int)response.StatusCode);
+                        };
+                    })
+
+                    // Configure exporters from configuration
+                    .AddConfiguredExporters(otelOptions);
+
+                // Configure sampling if specified
+                if (otelOptions.SamplingProbability < 1.0)
+                {
+                    traceBuilder.SetSampler(new ParentBasedSampler(
+                        new TraceIdRatioBasedSampler(otelOptions.SamplingProbability)));
+                }
+            });
+
+        return services;
     }
 
     /// <summary>

@@ -1,7 +1,7 @@
 namespace Wanderpool.Common.Infra.Telemetry;
 
 /// <summary>
-/// Configuration for OpenTelemetry tracing exporters.
+/// Configuration for OpenTelemetry tracing.
 /// </summary>
 public class OpenTelemetryConfiguration
 {
@@ -25,4 +25,10 @@ public class OpenTelemetryConfiguration
     /// Sampling probability between 0.0 and 1.0. Defaults to 1.0 (100% sampling).
     /// </summary>
     public double SamplingProbability { get; set; } = 1.0;
+
+    /// <summary>
+    /// Collection of exporters to use. If not configured, defaults to OTLP exporter.
+    /// Supported types: "otlp", "jaeger", "zipkin", "console".
+    /// </summary>
+    public Dictionary<string, ExporterConfiguration> Exporters { get; set; } = new();
 }
