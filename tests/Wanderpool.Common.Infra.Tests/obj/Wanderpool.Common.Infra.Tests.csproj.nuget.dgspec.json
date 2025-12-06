@@ -1,0 +1,122 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\Projects\\Rider\\Wanderpool.Common\\tests\\Wanderpool.Common.Infra.Tests\\Wanderpool.Common.Infra.Tests.csproj": {}
+  },
+  "projects": {
+    "D:\\Projects\\Rider\\Wanderpool.Common\\src\\Wanderpool.Common.Infra\\Wanderpool.Common.Infra.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Rider\\Wanderpool.Common\\src\\Wanderpool.Common.Infra\\Wanderpool.Common.Infra.csproj",
+        "projectName": "Wanderpool.Common.Infra",
+        "projectPath": "D:\\Projects\\Rider\\Wanderpool.Common\\src\\Wanderpool.Common.Infra\\Wanderpool.Common.Infra.csproj",
+        "packagesPath": "C:\\Users\\miked\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Rider\\Wanderpool.Common\\src\\Wanderpool.Common.Infra\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\miked\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.pkg.github.com/wixtoolset/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "dependencies": {
+            "OpenTelemetry": {
+              "target": "Package",
+              "version": "[1.7.0, )"
+            },
+            "OpenTelemetry.Api": {
+              "target": "Package",
+              "version": "[1.7.0, )"
+            },
+            "OpenTelemetry.Api.ProviderBuilderExtensions": {
+              "target": "Package",
+              "version": "[1.7.0, )"
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[7.2.4, )"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.426\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Rider\\Wanderpool.Common\\tests\\Wanderpool.Common.Infra.Tests\\Wanderpool.Common.Infra.Tests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Rider\\Wanderpool.Common\\tests\\Wanderpool.Common.Infra.Tests\\Wanderpool.Common.Infra.Tests.csproj",
+        "projectName": "Wanderpool.Common.Infra.Tests",
+        "projectPath": "D:\\Projects\\Rider\\Wanderpool.Common\\tests\\Wanderpool.Common.Infra.Tests\\Wanderpool.Common.Infra.Tests.csproj",
+        "packagesPath": "C:\\Users\\miked\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Rider\\Wanderpool.Common\\tests\\Wanderpool.Common.Infra.Tests\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\miked\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.pkg.github.com/wixtoolset/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "projectReferences": {
+              "D:\\Projects\\Rider\\Wanderpool.Common\\src\\Wanderpool.Common.Infra\\Wanderpool.Common.Infra.csproj": {
+                "projectPath": "D:\\Projects\\Rider\\Wanderpool.Common\\src\\Wanderpool.Common.Infra\\Wanderpool.Common.Infra.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "dependencies": {
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[6.11.0, )"
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.6.2, )"
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.4.2, )"
+            },
+            "xunit.runner.visualstudio": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.4.5, )"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.426\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
