@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Wanderpool.Common.Contracts")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+61e221124f51bc9dc5ef676425a4f0a7ff94246d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Wanderpool.Common.Contracts")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Wanderpool.Common.Contracts")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -17,14 +17,15 @@
           "C:\\Users\\miked\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net10.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.pkg.github.com/wixtoolset/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
+          "net10.0": {
+            "targetAlias": "net10.0",
             "projectReferences": {}
           }
         },
@@ -32,29 +33,55 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "net6.0": {
+        "net10.0": {
+          "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.Extensions.Http.Resilience": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
             "OpenTelemetry": {
               "target": "Package",
-              "version": "[1.7.0, )"
+              "version": "[1.14.0, )"
             },
             "OpenTelemetry.Api": {
               "target": "Package",
-              "version": "[1.7.0, )"
+              "version": "[1.14.0, )"
             },
             "OpenTelemetry.Api.ProviderBuilderExtensions": {
               "target": "Package",
-              "version": "[1.7.0, )"
-            },
-            "Polly": {
-              "target": "Package",
-              "version": "[7.2.4, )"
+              "version": "[1.14.0, )"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.426\\RuntimeIdentifierGraph.json"
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Users\\miked\\.dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -71,14 +98,15 @@
           "C:\\Users\\miked\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net10.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.pkg.github.com/wixtoolset/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
+          "net10.0": {
+            "targetAlias": "net10.0",
             "projectReferences": {
               "D:\\Projects\\Rider\\Wanderpool.Common\\src\\Wanderpool.Common.Infra\\Wanderpool.Common.Infra.csproj": {
                 "projectPath": "D:\\Projects\\Rider\\Wanderpool.Common\\src\\Wanderpool.Common.Infra\\Wanderpool.Common.Infra.csproj"
@@ -90,31 +118,54 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "net6.0": {
+        "net10.0": {
+          "targetAlias": "net10.0",
           "dependencies": {
             "FluentAssertions": {
               "target": "Package",
-              "version": "[6.11.0, )"
+              "version": "[6.12.2, )"
             },
             "Microsoft.NET.Test.Sdk": {
               "target": "Package",
-              "version": "[17.6.2, )"
+              "version": "[17.12.0, )"
             },
             "xunit": {
               "target": "Package",
-              "version": "[2.4.2, )"
+              "version": "[2.9.2, )"
             },
             "xunit.runner.visualstudio": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[2.4.5, )"
+              "version": "[2.5.12, )"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.426\\RuntimeIdentifierGraph.json"
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Users\\miked\\.dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
