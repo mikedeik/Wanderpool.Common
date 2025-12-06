@@ -11,8 +11,7 @@ Execute a prompt plan to implement unfinished prompts in the project
    - Make sure the tests pass, and the program builds
    - Make sure all the tests pass, and the solution builds
    - Commit the changes to your repository with a clear commit message
-   - merge into the develop branch
-   - Update **@prompt_plan.md** to mark this prompt as completed.
 4. Ask for review before merging into the development branch
    - If successful Update **@prompt_plan.md** to mark this prompt as completed.
+   - Do not change anything else in the file
 5. Repeat with the next unfinished prompt
