@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Wanderpool.Common.Contracts/Wanderpool.Common.Contracts.csproj" />
+  <Project Path="src/Wanderpool.Common.Infra/Wanderpool.Common.Infra.csproj" />
+</Solution>
