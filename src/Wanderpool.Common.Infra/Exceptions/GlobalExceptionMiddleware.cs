@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Wanderpool.Common.Clients.Exceptions;
 using Wanderpool.Common.Contracts.ApiResponse;
@@ -9,16 +11,19 @@ namespace Wanderpool.Common.Infra.Exceptions;
 /// <summary>
 /// Middleware for handling all unhandled exceptions and returning consistent API responses.
 /// Maps exceptions to appropriate HTTP status codes and error formats.
+/// Supports production mode to hide detailed error information.
 /// </summary>
 public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionMiddleware> _logger;
+    private readonly IWebHostEnvironment _environment;
 
-    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
+    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger, IWebHostEnvironment environment)
     {
         _next = next;
         _logger = logger;
+        _environment = environment;
     }
 
     /// <summary>
@@ -54,6 +59,12 @@ public class GlobalExceptionMiddleware
 
         // Map exception to appropriate status code and error response
         var (statusCode, errorCode, message) = MapExceptionToResponse(exception);
+
+        // In production, hide detailed error messages for 5xx errors
+        if (_environment.IsProduction() && statusCode >= StatusCodes.Status500InternalServerError)
+        {
+            message = "An unexpected error occurred. Please try again later.";
+        }
 
         response.StatusCode = statusCode;
 

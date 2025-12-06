@@ -408,4 +408,99 @@ public class GlobalExceptionMiddlewareTests
         envelope.Error.Should().NotBeNull();
         envelope.Error.Code.Should().Be("BUSINESS_RULE_VIOLATION");
     }
+
+    [Fact]
+    public async Task Middleware_InProductionMode_HidesDetailedErrorMessagesFor5xxErrors()
+    {
+        // Arrange
+        var args = new[] { "--environment=Production" };
+        var builder = WebApplication.CreateBuilder(args);
+        var app = builder.Build();
+
+        app.UseMiddleware<GlobalExceptionMiddleware>();
+        app.MapGet("/test", () =>
+        {
+            throw new InvalidOperationException("Sensitive internal error details: Database connection string exposed!");
+        });
+
+        var server = new TestServer(app);
+        var client = server.CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/test");
+
+        // Assert
+        response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        var content = await response.Content.ReadAsStringAsync();
+        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
+
+        envelope.Should().NotBeNull();
+        envelope.Error.Should().NotBeNull();
+        envelope.Error.Message.Should().Be("An unexpected error occurred. Please try again later.");
+        envelope.Error.Message.Should().NotContain("Database connection string");
+    }
+
+    [Fact]
+    public async Task Middleware_InDevelopmentMode_ShowsDetailedErrorMessages()
+    {
+        // Arrange
+        var args = new[] { "--environment=Development" };
+        var builder = WebApplication.CreateBuilder(args);
+        var app = builder.Build();
+
+        app.UseMiddleware<GlobalExceptionMiddleware>();
+        app.MapGet("/test", () =>
+        {
+            throw new InvalidOperationException("Detailed error message for debugging.");
+        });
+
+        var server = new TestServer(app);
+        var client = server.CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/test");
+
+        // Assert
+        response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        var content = await response.Content.ReadAsStringAsync();
+        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
+
+        envelope.Should().NotBeNull();
+        envelope.Error.Should().NotBeNull();
+        envelope.Error.Message.Should().Be("Detailed error message for debugging.");
+    }
+
+    [Fact]
+    public async Task Middleware_In4xxErrors_ShowsDetailedMessagesEvenInProduction()
+    {
+        // Arrange
+        var args = new[] { "--environment=Production" };
+        var builder = WebApplication.CreateBuilder(args);
+        var app = builder.Build();
+
+        app.UseMiddleware<GlobalExceptionMiddleware>();
+        app.MapGet("/test", () =>
+        {
+            throw new ValidationException(new Dictionary<string, string[]>
+            {
+                { "Email", new[] { "Email is required" } }
+            });
+        });
+
+        var server = new TestServer(app);
+        var client = server.CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/test");
+
+        // Assert
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        var content = await response.Content.ReadAsStringAsync();
+        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(content);
+
+        envelope.Should().NotBeNull();
+        envelope.Error.Should().NotBeNull();
+        // 4xx errors should show their actual messages even in production
+        envelope.Error.Message.Should().Contain("Validation failed");
+    }
 }
