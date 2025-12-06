@@ -1,44 +1,77 @@
-﻿using Polly;
+﻿using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Timeout;
+using Polly.CircuitBreaker;
+using Polly.Retry;
 
 namespace Wanderpool.Common.Infra.Policies;
 
-using Microsoft.Extensions.Http.Resilience;
-
 public static class ResiliencePipelines
 {
+    /// <summary>
+    /// Adds HTTP resilience policies with hardcoded defaults.
+    /// Use AddStandardResilienceWithConfiguration() for environment-specific settings.
+    /// </summary>
+    /// <remarks>
+    /// Deprecated: Use AddStandardResilienceWithConfiguration with IOptions pattern instead.
+    /// </remarks>
     public static void AddStandardResilience(this IHttpClientBuilder clientBuilder)
+    {
+        var config = new ResilienceConfiguration();
+        AddStandardResilienceInternal(clientBuilder, config);
+    }
+
+    /// <summary>
+    /// Adds HTTP resilience policies with configuration from appsettings.json.
+    /// </summary>
+    /// <param name="clientBuilder">The HTTP client builder.</param>
+    /// <param name="options">The resilience configuration options.</param>
+    public static void AddStandardResilienceWithConfiguration(
+        this IHttpClientBuilder clientBuilder,
+        IOptions<ResilienceConfiguration> options)
+    {
+        AddStandardResilienceInternal(clientBuilder, options.Value);
+    }
+
+    /// <summary>
+    /// Internal implementation of resilience policies.
+    /// </summary>
+    private static void AddStandardResilienceInternal(
+        IHttpClientBuilder clientBuilder,
+        ResilienceConfiguration config)
     {
         clientBuilder.AddResilienceHandler("standard", builder =>
         {
             // Timeout per try
             builder.AddTimeout(new HttpTimeoutStrategyOptions
             {
-                Timeout = TimeSpan.FromSeconds(10),
+                Timeout = TimeSpan.FromSeconds(config.Timeout.TimeoutSeconds),
             });
 
             // Retry with exponential backoff + jitter
             builder.AddRetry(new HttpRetryStrategyOptions
             {
-                MaxRetryAttempts = 3,
+                MaxRetryAttempts = config.Retry.MaxRetryAttempts,
                 BackoffType = DelayBackoffType.Exponential,
-                Delay = TimeSpan.FromMilliseconds(300),
-                UseJitter = true
+                Delay = TimeSpan.FromMilliseconds(config.Retry.InitialDelayMilliseconds),
+                UseJitter = config.Retry.UseJitter
             });
 
             // Circuit breaker
             builder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
             {
-                BreakDuration = TimeSpan.FromSeconds(20),
-                SamplingDuration = TimeSpan.FromSeconds(30),
-                FailureRatio = 0.25,      // opens if 25% of requests fail
-                MinimumThroughput = 20    // evaluates only after 20 requests          
+                BreakDuration = TimeSpan.FromSeconds(config.CircuitBreaker.BreakDurationSeconds),
+                SamplingDuration = TimeSpan.FromSeconds(config.CircuitBreaker.SamplingDurationSeconds),
+                FailureRatio = config.CircuitBreaker.FailureRatio,
+                MinimumThroughput = config.CircuitBreaker.MinimumThroughput
             });
 
             // Hedging for better P99 latency
             builder.AddHedging(new HttpHedgingStrategyOptions
             {
-                Delay = TimeSpan.FromMilliseconds(200),
-                MaxHedgedAttempts = 2
+                Delay = TimeSpan.FromMilliseconds(config.Hedging.DelayMilliseconds),
+                MaxHedgedAttempts = config.Hedging.MaxHedgedAttempts
             });
         });
     }

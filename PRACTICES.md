@@ -191,13 +191,85 @@ public void MyService_WhenConfigured_UsesDevelopmentSettings()
 ## Current Implementation Status
 
 ### Following Best Practices ✅
-- `AddWanderpoolTracingWithConfiguration()` - Uses Options pattern
-- `AddWanderpoolTracingWithExporters()` - Uses Options pattern with IConfiguration
 
-### Candidates for Refactoring ⚠️
-- `AddWanderpoolLogging()` - Multiple hardcoded log levels and templates
-- `AddStandardResilience()` - Multiple hardcoded resilience parameters (timeouts, retries, etc.)
-- `AddWanderpoolCorrelationId()` - Uses hardcoded string keys
+#### OpenTelemetry Tracing (Telemetry/TracingExtensions.cs)
+- **Configuration class**: `OpenTelemetryConfiguration` with const Name = "OpenTelemetry"
+- **Extension methods**:
+  - `AddWanderpoolTracingWithConfiguration()` - Uses IConfiguration pattern
+  - `AddWanderpoolTracingWithExporters()` - Environment-aware with IConfiguration
+
+#### HTTP Resilience (Policies/ResiliencePipelines.cs)
+- **Configuration class**: `ResilienceConfiguration` with nested config classes for:
+  - Timeout policies (per-request timeout)
+  - Retry policies (exponential backoff + jitter)
+  - Circuit breaker (failure ratio, sampling, minimum throughput)
+  - Hedging strategies (improved P99 latency)
+- **Extension methods**:
+  - `AddStandardResilience()` - Original hardcoded version (for backward compatibility)
+  - `AddStandardResilienceWithConfiguration()` - Uses IOptions pattern
+
+#### Structured Logging (Logging/LoggingExtensions.cs)
+- **Configuration class**: `LoggingConfiguration` with nested classes for:
+  - Log level overrides (Microsoft.*,  Microsoft.Hosting.Lifetime)
+  - Output templates (Development vs Production formatting)
+  - Enrichment options (machine name, process ID, thread ID, environment name)
+- **Extension methods**:
+  - `AddWanderpoolLogging()` - Original hardcoded version (for backward compatibility)
+  - `AddWanderpoolLoggingWithConfiguration()` - Uses IConfiguration pattern
+
+#### Correlation ID Tracking (Telemetry/CorrelationIdExtensions.cs)
+- **Configuration class**: `CorrelationIdConfiguration` with options for:
+  - HTTP header name for reading correlation ID
+  - HttpContext.Items key name for storing correlation ID
+  - GUID format for generated correlation IDs
+  - Response header inclusion
+- **Extension methods**:
+  - `AddWanderpoolCorrelationId()` - Original hardcoded version (for backward compatibility)
+  - `AddWanderpoolCorrelationIdWithConfiguration()` - Uses IConfiguration pattern
+
+### Implementation Pattern Summary
+
+All new configuration-aware methods follow this pattern:
+
+1. **Configuration Class** with:
+   - `public const string Name` for appsettings.json section binding
+   - Sensible defaults for each property
+   - Full documentation of each setting
+
+2. **Extension Methods** with:
+   - Original method for backward compatibility (uses default configuration)
+   - New `*WithConfiguration()` method accepting `IConfiguration`
+   - Private `*Internal()` method with shared implementation
+
+3. **Example appsettings.json**:
+```json
+{
+  "OpenTelemetry": {
+    "Endpoint": "http://localhost:4317",
+    "Enabled": true,
+    "SamplingProbability": 1.0
+  },
+  "Resilience": {
+    "Timeout": { "TimeoutSeconds": 10 },
+    "Retry": { "MaxRetryAttempts": 3, "InitialDelayMilliseconds": 300 },
+    "CircuitBreaker": { "BreakDurationSeconds": 20, "FailureRatio": 0.25 },
+    "Hedging": { "DelayMilliseconds": 200, "MaxHedgedAttempts": 2 }
+  },
+  "Logging": {
+    "MinimumLevel": "Information",
+    "LogLevelOverrides": {
+      "Microsoft": "Warning",
+      "MicrosoftHostingLifetime": "Information"
+    }
+  },
+  "CorrelationId": {
+    "HeaderName": "X-Correlation-Id",
+    "ContextItemKey": "CorrelationId",
+    "IncludeInResponseHeader": true,
+    "GuidFormat": "D"
+  }
+}
+```
 
 ---
 
