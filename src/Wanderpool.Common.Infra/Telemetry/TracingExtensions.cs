@@ -65,10 +65,18 @@ public static class TracingExtensions
                         options.EnrichWithHttpRequest = (activity, request) =>
                         {
                             activity.SetTag("http.request.method_original", request.Method);
+                            activity.EnrichWithCorrelationId(request?.HttpContext);
+                            activity.EnrichWithRequestBodySize(request);
+                            activity.EnrichWithClientIp(request);
+                            activity.EnrichWithUserAgent(request);
+                            activity.EnrichWithRequestPath(request);
+                            activity.EnrichWithContentType(request);
                         };
                         options.EnrichWithHttpResponse = (activity, response) =>
                         {
                             activity.SetTag("http.response.status_code", response.StatusCode);
+                            activity.EnrichWithResponseBodySize(response);
+                            activity.EnrichWithResponseContentType(response);
                         };
                     })
 
@@ -79,10 +87,32 @@ public static class TracingExtensions
                         options.EnrichWithHttpRequestMessage = (activity, request) =>
                         {
                             activity.SetTag("http.request.uri", request.RequestUri?.ToString());
+                            if (request.Headers != null)
+                            {
+                                var contentLength = request.Content?.Headers?.ContentLength;
+                                if (contentLength.HasValue && contentLength.Value > 0)
+                                {
+                                    activity.SetTag("http.request.body.size", contentLength.Value);
+                                }
+
+                                if (request.Headers.TryGetValues("User-Agent", out var userAgentValues))
+                                {
+                                    var userAgent = userAgentValues.FirstOrDefault();
+                                    if (!string.IsNullOrEmpty(userAgent))
+                                    {
+                                        activity.SetTag("http.request.user_agent", userAgent);
+                                    }
+                                }
+                            }
                         };
                         options.EnrichWithHttpResponseMessage = (activity, response) =>
                         {
                             activity.SetTag("http.response.status_code", (int)response.StatusCode);
+                            var contentLength = response.Content?.Headers?.ContentLength;
+                            if (contentLength.HasValue && contentLength.Value > 0)
+                            {
+                                activity.SetTag("http.response.body.size", contentLength.Value);
+                            }
                         };
                     })
 
@@ -239,10 +269,19 @@ public static class TracingExtensions
                         options.EnrichWithHttpRequest = (activity, request) =>
                         {
                             activity.SetTag("http.request.method_original", request.Method);
+                            activity.EnrichWithCorrelationId(request?.HttpContext);
+                            activity.EnrichWithRequestBodySize(request);
+                            activity.EnrichWithClientIp(request);
+                            activity.EnrichWithUserAgent(request);
+                            activity.EnrichWithRequestPath(request);
+                            activity.EnrichWithContentType(request);
+                            activity.EnrichWithEnvironmentInfo(environment?.EnvironmentName);
                         };
                         options.EnrichWithHttpResponse = (activity, response) =>
                         {
                             activity.SetTag("http.response.status_code", response.StatusCode);
+                            activity.EnrichWithResponseBodySize(response);
+                            activity.EnrichWithResponseContentType(response);
                         };
                     })
 
@@ -253,10 +292,32 @@ public static class TracingExtensions
                         options.EnrichWithHttpRequestMessage = (activity, request) =>
                         {
                             activity.SetTag("http.request.uri", request.RequestUri?.ToString());
+                            if (request.Headers != null)
+                            {
+                                var contentLength = request.Content?.Headers?.ContentLength;
+                                if (contentLength.HasValue && contentLength.Value > 0)
+                                {
+                                    activity.SetTag("http.request.body.size", contentLength.Value);
+                                }
+
+                                if (request.Headers.TryGetValues("User-Agent", out var userAgentValues))
+                                {
+                                    var userAgent = userAgentValues.FirstOrDefault();
+                                    if (!string.IsNullOrEmpty(userAgent))
+                                    {
+                                        activity.SetTag("http.request.user_agent", userAgent);
+                                    }
+                                }
+                            }
                         };
                         options.EnrichWithHttpResponseMessage = (activity, response) =>
                         {
                             activity.SetTag("http.response.status_code", (int)response.StatusCode);
+                            var contentLength = response.Content?.Headers?.ContentLength;
+                            if (contentLength.HasValue && contentLength.Value > 0)
+                            {
+                                activity.SetTag("http.response.body.size", contentLength.Value);
+                            }
                         };
                     });
 
@@ -376,10 +437,18 @@ public static class TracingExtensions
                         options.EnrichWithHttpRequest = (activity, request) =>
                         {
                             activity.SetTag("http.request.method_original", request.Method);
+                            activity.EnrichWithCorrelationId(request?.HttpContext);
+                            activity.EnrichWithRequestBodySize(request);
+                            activity.EnrichWithClientIp(request);
+                            activity.EnrichWithUserAgent(request);
+                            activity.EnrichWithRequestPath(request);
+                            activity.EnrichWithContentType(request);
                         };
                         options.EnrichWithHttpResponse = (activity, response) =>
                         {
                             activity.SetTag("http.response.status_code", response.StatusCode);
+                            activity.EnrichWithResponseBodySize(response);
+                            activity.EnrichWithResponseContentType(response);
                         };
                     })
 
@@ -390,10 +459,32 @@ public static class TracingExtensions
                         options.EnrichWithHttpRequestMessage = (activity, request) =>
                         {
                             activity.SetTag("http.request.uri", request.RequestUri?.ToString());
+                            if (request.Headers != null)
+                            {
+                                var contentLength = request.Content?.Headers?.ContentLength;
+                                if (contentLength.HasValue && contentLength.Value > 0)
+                                {
+                                    activity.SetTag("http.request.body.size", contentLength.Value);
+                                }
+
+                                if (request.Headers.TryGetValues("User-Agent", out var userAgentValues))
+                                {
+                                    var userAgent = userAgentValues.FirstOrDefault();
+                                    if (!string.IsNullOrEmpty(userAgent))
+                                    {
+                                        activity.SetTag("http.request.user_agent", userAgent);
+                                    }
+                                }
+                            }
                         };
                         options.EnrichWithHttpResponseMessage = (activity, response) =>
                         {
                             activity.SetTag("http.response.status_code", (int)response.StatusCode);
+                            var contentLength = response.Content?.Headers?.ContentLength;
+                            if (contentLength.HasValue && contentLength.Value > 0)
+                            {
+                                activity.SetTag("http.response.body.size", contentLength.Value);
+                            }
                         };
                     })
 
