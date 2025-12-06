@@ -92,7 +92,21 @@ This document tracks the completion status of implementation steps from the Wand
 
 ### STEP-005: Global Exception Handler - Production Mode
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-06
+
+**Deliverables:**
+- ✅ `GlobalExceptionMiddleware.cs` - Enhanced with IWebHostEnvironment injection for environment detection
+- ✅ Added 3 new production mode tests to GlobalExceptionMiddlewareTests.cs
+
+**Implementation Details:**
+- Detects production vs development environment via IWebHostEnvironment
+- In Production: 5xx errors show generic message to prevent information leakage
+- In Development: Full error details shown for debugging
+- 4xx errors always show detailed messages (safe for client exposure)
+- Full error details always logged server-side for troubleshooting
+- Configurable environment via --environment parameter in WebApplicationBuilder
 
 ### STEP-006: Exception Handler Extension Methods
 
@@ -318,16 +332,16 @@ This document tracks the completion status of implementation steps from the Wand
 
 ## Summary
 
-- **Completed:** 4/55 steps
+- **Completed:** 5/55 steps
 - **In Progress:** 0/55 steps
-- **Pending:** 51/55 steps
-- **Completion Percentage:** 7.3%
+- **Pending:** 50/55 steps
+- **Completion Percentage:** 9.1%
 
 ## Next Steps
 
-1. STEP-005: Global Exception Handler - Production Mode
-2. STEP-006: Exception Handler Extension Methods
-3. STEP-007: Serilog Configuration Infrastructure
+1. STEP-006: Exception Handler Extension Methods
+2. STEP-007: Serilog Configuration Infrastructure
+3. STEP-008: Correlation ID Context Service
 
 ---
 
