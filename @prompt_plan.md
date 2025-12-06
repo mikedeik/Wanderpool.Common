@@ -249,7 +249,46 @@ This document tracks the completion status of implementation steps from the Wand
 
 ### STEP-013: OpenTelemetry Tracing - Enrichment
 
-**Status:** PENDING
+**Status:** ✅ COMPLETED
+
+**Completed:** 2025-12-07
+
+**Deliverables:**
+- ✅ `TracingEnricher.cs` - Static enrichment extension methods for Activity enrichment
+- ✅ `TracingEnricherTests.cs` - Test suite with 20 comprehensive tests
+  - Tests: Correlation ID, body sizes, client IP, user agent, request paths
+  - Tests: Environment info, exception details, content types, null safety
+- ✅ Updated `TracingExtensions.cs` - Integrated enrichment into all 4 tracing methods
+
+**Enrichment Methods (12 total):**
+- EnrichWithCorrelationId() - Extracts correlation ID from HttpContext.Items
+- EnrichWithRequestBodySize() - Tracks HTTP request body size
+- EnrichWithResponseBodySize() - Tracks HTTP response body size
+- EnrichWithClientIp() - Extracts client IP from connection info
+- EnrichWithUserAgent() - Extracts User-Agent header
+- EnrichWithRequestPath() - Tracks request path and query string
+- EnrichWithEnvironmentInfo() - Adds machine name and deployment environment
+- EnrichWithExceptionDetails() - Extracts exception type, message, and stack trace
+- EnrichWithContentType() - Tracks request content-type
+- EnrichWithResponseContentType() - Tracks response content-type
+- Plus 2 helper methods
+
+**Implementation Details:**
+- All enrichment methods are null-safe (defensive against null Activity, HttpContext, etc.)
+- Integrated into existing instrumentation callbacks:
+  - ASP.NET Core: EnrichWithHttpRequest and EnrichWithHttpResponse
+  - HttpClient: EnrichWithHttpRequestMessage and EnrichWithHttpResponseMessage
+- Applied to all 4 tracing extension methods:
+  - AddWanderpoolTracing() (default)
+  - AddWanderpoolTracing(endpoint, sampling)
+  - AddWanderpoolTracingWithExporters() - includes environment-aware enrichment
+  - AddWanderpoolTracingWithConfigurableExporters()
+
+**Test Coverage:**
+- 20 new tests for enrichment functionality
+- All 135 total tests passing (from 113)
+- Tests verify: null-safety, enrichment execution, multiple enrichments
+- Coverage for all enrichment methods and edge cases (missing headers, no content-length, etc.)
 
 ### STEP-014: OpenTelemetry Metrics - Basic Setup
 
@@ -439,16 +478,16 @@ This document tracks the completion status of implementation steps from the Wand
 
 ## Summary
 
-- **Completed:** 12/55 steps
+- **Completed:** 13/55 steps
 - **In Progress:** 0/55 steps
-- **Pending:** 43/55 steps
-- **Completion Percentage:** 22%
+- **Pending:** 42/55 steps
+- **Completion Percentage:** 24%
 
 ## Next Steps
 
-1. STEP-013: OpenTelemetry Tracing - Enrichment
-2. STEP-014: OpenTelemetry Metrics - Basic Setup
-3. STEP-015: Custom HTTP Client Metrics
+1. STEP-014: OpenTelemetry Metrics - Basic Setup
+2. STEP-015: Custom HTTP Client Metrics
+3. STEP-016: HTTP Client Metrics Handler
 
 ---
 
