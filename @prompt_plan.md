@@ -1162,39 +1162,55 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-034: Resilience Events Logging Infrastructure
-**Status:** PENDING  
-**User Story:** US-4.3  
-**Dependencies:** STEP-007  
-**Estimated Effort:** 2 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create event handlers for Polly resilience events.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `ResilienceEventsTests.cs`
-  - Write test: OnRetry event is loggable
-  - Write test: OnCircuitBreaker event is loggable
-  - Write test: OnTimeout event is loggable
-  - Write test: OnHedging event is loggable
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `ResilienceEventHandlers.cs` - Complete event handler implementation (146 lines)
+- ✅ `ResilienceEventsTests.cs` - Test suite with 8 comprehensive tests (185 lines)
 
-2. **GREEN**: Create `ResilienceEventHandlers.cs`
-  - Define event handler delegates
-  - Implement logging for each event type
-  - Run tests → ALL PASS
+**Implementation Details:**
+- ResilienceEventHandlers class with structured logging for all resilience events
+- OnRetry(attemptNumber, delay, exception) - Logs retry attempts at Warning level
+- OnCircuitBreakerOpened() - Logs circuit opening at Warning level
+- OnCircuitBreakerHalfOpen() - Logs recovery testing at Information level
+- OnCircuitBreakerClosed() - Logs circuit reset at Information level
+- OnTimeout(timeoutDuration) - Logs timeout events at Warning level
+- OnHedging(attemptNumber) - Logs hedging attempts at Information level
+- Getter methods providing Polly-compatible delegates
+- Full parameter validation (ArgumentNullException for null logger)
 
-3. **REFACTOR**
-  - Extract common logging pattern
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Retry events logged with attempt number, delay, and exception details
+- Circuit breaker state transitions (opened, half-open, closed) properly logged
+- Timeout events logged with configured duration
+- Hedging attempts logged with attempt number
+- Appropriate log levels for each event type:
+  - Warning: Retry, CircuitBreakerOpened, Timeout (operation degraded)
+  - Information: CircuitBreakerHalfOpen, CircuitBreakerClosed, Hedging (normal operations)
+- Handler instantiation and usage validation
+- Null logger throws ArgumentNullException
+- All 8 tests passing
+- Build successful with 0 errors, 0 warnings
+- All 262 tests passing in full test suite
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] All event types supported
-- [ ] Structured logging used
+**Architecture Notes:**
+- Stateless event handlers suitable for dependency injection
+- Getter methods return Polly-compatible delegates for event subscriptions
+- Structured logging with explicit parameters for analysis
+- Appropriate log levels based on event severity
+- Ready for integration with ResiliencePipelines (STEP-035)
+- Extensible design supports adding additional event types
+- Clear separation between event detection and logging
 
-#### Deliverable
-- `ResilienceEventHandlers.cs`
-- `ResilienceEventsTests.cs` (min 4 tests)
+**Event Log Examples:**
+- Retry: "Retry attempt 2 scheduled with delay 500ms. Exception: HttpRequestException - Service unavailable"
+- CircuitOpened: "Circuit breaker opened. Too many failures detected."
+- CircuitHalfOpen: "Circuit breaker transitioned to half-open state."
+- CircuitClosed: "Circuit breaker closed. Service has recovered."
+- Timeout: "Request timeout occurred. Timeout duration: 10 seconds."
+- Hedging: "Hedging attempt 1 triggered. Sending duplicate request..."
 
 ---
 
