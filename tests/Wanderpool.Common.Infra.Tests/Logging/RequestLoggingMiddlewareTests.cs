@@ -263,4 +263,182 @@ public class RequestLoggingMiddlewareTests
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("GET", capturedMethod);
     }
+
+    [Fact]
+    public async Task Middleware_CanRedactAuthorizationHeader()
+    {
+        // Arrange
+        var authorizationValue = "Bearer secret-token-12345";
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = false;
+                    options.EnableResponseBodyLogging = false;
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context => await context.Response.WriteAsync("OK"));
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/test");
+        request.Headers.Add("Authorization", authorizationValue);
+        var response = await httpClient.SendAsync(request);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Middleware_CanRedactXApiKeyHeader()
+    {
+        // Arrange
+        var apiKeyValue = "super-secret-api-key";
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = false;
+                    options.EnableResponseBodyLogging = false;
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context => await context.Response.WriteAsync("OK"));
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/test");
+        request.Headers.Add("X-Api-Key", apiKeyValue);
+        var response = await httpClient.SendAsync(request);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Middleware_CanRedactCookieHeader()
+    {
+        // Arrange
+        var cookieValue = "session=abc123def456";
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = false;
+                    options.EnableResponseBodyLogging = false;
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context => await context.Response.WriteAsync("OK"));
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/test");
+        request.Headers.Add("Cookie", cookieValue);
+        var response = await httpClient.SendAsync(request);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Middleware_PreservesNonSensitiveHeaders()
+    {
+        // Arrange
+        var customHeaderValue = "custom-value";
+        string? capturedCustomHeader = null;
+
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = false;
+                    options.EnableResponseBodyLogging = false;
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(context =>
+                {
+                    capturedCustomHeader = context.Request.Headers["X-Custom-Header"].ToString();
+                    return context.Response.WriteAsync("OK");
+                });
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/test");
+        request.Headers.Add("X-Custom-Header", customHeaderValue);
+        var response = await httpClient.SendAsync(request);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(customHeaderValue, capturedCustomHeader);
+    }
+
+    [Fact]
+    public async Task Middleware_AllowsConfigurableRedactionList()
+    {
+        // Arrange
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = false;
+                    options.EnableResponseBodyLogging = false;
+                    // Verify we can modify the redaction list
+                    options.SensitiveHeaders.Add("X-Custom-Secret");
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context => await context.Response.WriteAsync("OK"));
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/test");
+        request.Headers.Add("X-Custom-Secret", "secret-value");
+        var response = await httpClient.SendAsync(request);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
 }

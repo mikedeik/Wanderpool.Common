@@ -81,11 +81,41 @@ public class RequestLoggingMiddleware
             pathAndQuery += request.QueryString.Value;
         }
 
+        // Log headers with redaction for sensitive ones
+        var headersInfo = GetRedactedHeadersInfo(request.Headers, options);
+
         _logger.LogInformation(
-            "HTTP {HttpMethod} request to {Path} | CorrelationId: {CorrelationId}",
+            "HTTP {HttpMethod} request to {Path} | Headers: {Headers} | CorrelationId: {CorrelationId}",
             request.Method,
             pathAndQuery,
+            headersInfo,
             correlationId);
+    }
+
+    /// <summary>
+    /// Gets header information with sensitive headers redacted.
+    /// </summary>
+    private string GetRedactedHeadersInfo(IHeaderDictionary headers, RequestLoggingOptions options)
+    {
+        if (!headers.Any())
+        {
+            return "none";
+        }
+
+        var redactedHeaders = new List<string>();
+        var sensitiveHeadersLower = options.SensitiveHeaders
+            .Select(h => h.ToLowerInvariant())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var header in headers)
+        {
+            var headerName = header.Key;
+            var isSensitive = sensitiveHeadersLower.Contains(headerName.ToLowerInvariant());
+            var value = isSensitive ? "[REDACTED]" : header.Value.ToString();
+            redactedHeaders.Add($"{headerName}={value}");
+        }
+
+        return string.Join(", ", redactedHeaders);
     }
 
     /// <summary>
