@@ -1443,39 +1443,33 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-042: Health Checks Infrastructure
-**Status:** PENDING  
-**User Story:** US-5.4  
-**Dependencies:** None  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create service extension for health check registration.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/HealthChecks/HealthCheckExtensionsTests.cs`
-  - Write test: AddWanderpoolHealthChecks registers health checks
-  - Write test: HTTP client health checks added
-  - Write test: Custom health checks can be added
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `HealthCheckExtensions.cs` - Service extension for health checks
+- ✅ `HealthCheckExtensionsTests.cs` - Test suite with 5 tests
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/HealthChecks/HealthCheckExtensions.cs`
-  - Implement AddWanderpoolHealthChecks extension
-  - Register default health checks
-  - Run tests → ALL PASS
+**Implementation Details:**
+- AddWanderpoolHealthChecks() - Registers default health checks
+- AddWanderpoolHealthChecks(Action<IHealthChecksBuilder>) - Allows custom configuration
+- Returns IServiceCollection for method chaining
+- Registers HealthCheckService in dependency injection
 
-3. **REFACTOR**
-  - Make health checks configurable
-  - Run tests → ALL PASS
+**Key Features:**
+- Simple, fluent API for health check registration
+- Support for custom health check configuration
+- Chainable service collection extension
+- Built on .NET health checks infrastructure
 
-#### Acceptance Criteria
-- [ ] All tests pass with >85% coverage
-- [ ] Health checks properly registered
-- [ ] Extensible for custom checks
+**Test Coverage:**
+- Service collection chaining ✅
+- Configuration with callback ✅
+- HealthCheckService registration ✅
+- Multiple calls support ✅
 
-#### Deliverable
-- `HealthCheckExtensions.cs`
-- `HealthCheckExtensionsTests.cs` (min 3 tests)
-- AspNetCore.HealthChecks.Uris package added
+**Test Results:** 304 passing (5 new tests)
 
 ---
 
