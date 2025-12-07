@@ -971,42 +971,37 @@ await httpClient.SendAsync(request);
 ## PHASE 4: RESILIENCE ENHANCEMENT
 
 ### STEP-030: Resilience Options Configuration Class
-**Status:** PENDING  
-**User Story:** US-4.2  
-**Dependencies:** None  
-**Estimated Effort:** 2 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create configuration classes for resilience pipeline options.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Policies/ResilienceOptionsTests.cs`
-  - Write test: Default options have reasonable values
-  - Write test: Timeout options are configurable
-  - Write test: Retry options are configurable
-  - Write test: Circuit breaker options are configurable
-  - Write test: Hedging options are configurable
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `ResilienceOptions.cs` - Configuration classes for all resilience policies
+- ✅ `ResilienceOptionsTests.cs` - Test suite with 11 comprehensive tests
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Policies/ResilienceOptions.cs`
-  - Define configuration classes
-  - Set default values
-  - Run tests → ALL PASS
+**Implementation Details:**
+- TimeoutPolicyOptions: Configurable timeout in seconds (default: 10s)
+- RetryPolicyOptions: Max attempts, initial/max delays, exponential backoff flag (defaults: 3 retries, 300ms initial, exponential enabled)
+- CircuitBreakerPolicyOptions: Failure ratio, minimum throughput, sampling period, break duration (defaults: 0.25 ratio, 20 minimum, 30s sampling, 20s break)
+- HedgingStrategyOptions: Delay, max attempts, enabled flag (defaults: 200ms delay, 2 attempts, disabled)
+- All options mutable for flexible configuration
+- Maps to "Resilience" section in appsettings.json
 
-3. **REFACTOR**
-  - Add XML documentation
-  - Add validation attributes
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Configuration section name verification
+- Default value validation for all policies
+- Independent configurability tests for each policy
+- Full initialization validation
+- Policy-specific parameter changes
+- All 11 tests passing
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Sensible defaults set
-- [ ] All policies configurable
-- [ ] Well documented
-
-#### Deliverable
-- `ResilienceOptions.cs` with nested classes
-- `ResilienceOptionsTests.cs` (min 5 tests)
+**Architecture Notes:**
+- Nested classes follow ASP.NET Core Options pattern
+- Designed for IOptions<ResilienceOptions> dependency injection
+- Sensible defaults support out-of-the-box usage
+- All policies independently configurable
+- Ready for STEP-031 (Configurable Resilience Pipeline Builder)
 
 ---
 
