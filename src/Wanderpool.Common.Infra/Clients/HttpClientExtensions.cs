@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Wanderpool.Common.Infra.Clients.HttpClientHandlers;
 
 namespace Wanderpool.Common.Infra.Clients;
 
@@ -36,6 +37,23 @@ public static class HttpClientExtensions
                 client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
             });
 
+        // Add token refresh handler if token provider type is specified
+        if (options.TokenProviderType != null)
+        {
+            httpClientBuilder.AddHttpMessageHandler(provider =>
+            {
+                var tokenProvider = provider.GetService(options.TokenProviderType);
+                if (tokenProvider is ITokenProvider tp)
+                {
+                    var logger = provider.GetRequiredService(
+                        typeof(Microsoft.Extensions.Logging.ILogger<TokenRefreshHandler>));
+                    return new TokenRefreshHandler(tp, (Microsoft.Extensions.Logging.ILogger<TokenRefreshHandler>)logger);
+                }
+                // If token provider not found, create a no-op delegating handler
+                return new NoOpHandler();
+            });
+        }
+
         // Apply resilience pipeline if configured
         if (!string.IsNullOrEmpty(options.ResiliencePipelineName))
         {
@@ -47,5 +65,16 @@ public static class HttpClientExtensions
         // message handler configuration or middleware patterns
 
         return services;
+    }
+
+    /// <summary>
+    /// No-op delegating handler for fallback cases.
+    /// </summary>
+    private class NoOpHandler : DelegatingHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return base.SendAsync(request, cancellationToken);
+        }
     }
 }
