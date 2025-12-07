@@ -1347,37 +1347,32 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-039: Validation Filter Extension Method
-**Status:** PENDING  
-**User Story:** US-5.2  
-**Dependencies:** STEP-038  
-**Estimated Effort:** 1 hour
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create extension method for easy filter registration.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `ValidationFilterExtensionsTests.cs`
-  - Write test: AddValidation adds filter to endpoint
-  - Write test: Extension works with route builders
-  - Write test: Extension is chainable
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `ValidationFilterExtensions.cs` - Extension method for route handlers
+- ✅ `ValidationFilterExtensionsTests.cs` - Test suite with 3 tests
 
-2. **GREEN**: Create `ValidationFilterExtensions.cs`
-  - Implement AddValidation extension
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Adds WithValidation<T> extension method to RouteHandlerBuilder
+- Provides fluent API for registering validation filters on endpoints
+- Uses AddEndpointFilter to register the ValidationFilter<T>
+- Fully chainable - returns RouteHandlerBuilder for method chaining
 
-3. **REFACTOR**
-  - Add XML documentation
-  - Run tests → ALL PASS
+**Key Features:**
+- Simple one-line filter registration
+- Generic implementation works with any request type
+- Chainable with other endpoint methods
+- Zero configuration required
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Easy to use in endpoint definitions
-- [ ] Chainable API
+**Test Coverage:**
+- Filter added to route handlers ✅
+- Extension is chainable ✅
+- Works with generic route handlers (string, int, custom types) ✅
 
-#### Deliverable
-- `ValidationFilterExtensions.cs`
-- `ValidationFilterExtensionsTests.cs` (min 3 tests)
+**Test Results:** 292 passing (3 new tests)
 
 ---
 
