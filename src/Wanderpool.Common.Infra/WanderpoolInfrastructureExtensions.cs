@@ -44,7 +44,7 @@ public static class WanderpoolInfrastructureExtensions
         configure(options);
 
         // Validate options
-        ValidateOptions(options);
+        WanderpoolConfigurationValidator.Validate(options);
 
         // Register tracing
         if (options.EnableTracing)
@@ -110,21 +110,4 @@ public static class WanderpoolInfrastructureExtensions
         return app;
     }
 
-    /// <summary>
-    /// Validates the Wanderpool options and throws if invalid.
-    /// </summary>
-    /// <param name="options">The options to validate.</param>
-    /// <exception cref="ArgumentException">Thrown when options are invalid.</exception>
-    private static void ValidateOptions(WanderpoolOptions options)
-    {
-        if (string.IsNullOrEmpty(options.ServiceName))
-        {
-            throw new ArgumentException("ServiceName cannot be null or empty.", nameof(options.ServiceName));
-        }
-
-        if (string.IsNullOrEmpty(options.ServiceVersion))
-        {
-            throw new ArgumentException("ServiceVersion cannot be null or empty.", nameof(options.ServiceVersion));
-        }
-    }
 }
