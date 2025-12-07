@@ -552,38 +552,43 @@ This document tracks the completion status of implementation steps from the Wand
 ## PHASE 3: ENHANCED LOGGING
 
 ### STEP-021: Request Logging Options
-**Status:** PENDING  
-**User Story:** US-1.2  
-**Dependencies:** None  
-**Estimated Effort:** 1 hour
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create configuration class for request logging behavior.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `RequestLoggingOptionsTests.cs`
-  - Write test: Default options have body logging disabled
-  - Write test: Sensitive headers list is populated
-  - Write test: Options are mutable
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `RequestLoggingOptions.cs` - Configuration class with sensible security defaults
+- ✅ `RequestLoggingOptionsTests.cs` - Test suite with 5 comprehensive tests
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Logging/RequestLoggingOptions.cs`
-  - Define configuration properties
-  - Set sensible defaults
-  - Run tests → ALL PASS
+**Implementation Details:**
+- EnableRequestBodyLogging: bool (default: false) - disabled by default for security
+- EnableResponseBodyLogging: bool (default: false) - disabled by default for security
+- MaxBodySizeLogged: int (default: 4096) - prevents log bloat from large payloads
+- IncludeQueryString: bool (default: true) - logs query strings for debugging
+- SensitiveHeaders: ICollection<string> - redaction list (Authorization, X-Api-Key, Cookie, Set-Cookie, X-CSRF-Token, X-Auth-Token, Authorization-Token)
+- All properties fully documented with XML comments
+- All properties mutable for flexible configuration
 
-3. **REFACTOR**
-  - Add XML documentation
-  - Run tests → ALL PASS
+**Test Coverage:**
+- DefaultOptions_BodyLoggingDisabled() - Verifies body logging is off by default
+- DefaultOptions_SensitiveHeadersPopulated() - Verifies sensitive headers list is pre-populated
+- Options_AreModifiable() - Verifies all options can be modified after creation
+- DefaultOptions_MaxBodySizeIsConfigurable() - Verifies max body size has sensible default
+- DefaultOptions_IncludeQueryStringIsConfigurable() - Verifies query string flag defaults to true
+- All 188 existing tests still passing (5 new tests added)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Defaults are secure (no body logging)
-- [ ] Well documented
+**Security Features:**
+- Body logging disabled by default (secure-by-default principle)
+- Sensible body size limit (4KB) to prevent log bloat
+- Comprehensive sensitive header list for redaction
+- Mutable configuration for flexibility
 
-#### Deliverable
-- `RequestLoggingOptions.cs`
-- `RequestLoggingOptionsTests.cs` (min 3 tests)
+**Architecture Notes:**
+- Class designed to be used with DI and IOptions<RequestLoggingOptions> pattern
+- Ready for STEP-022 (Request Logging Middleware) integration
+- Configuration can be bound from appsettings.json under "RequestLogging" section
+- Next step: STEP-022 (Request Logging Middleware - Core)
 
 ---
 
