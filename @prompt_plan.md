@@ -774,46 +774,48 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-026: Outbound HTTP Logging Handler - Core
-**Status:** PENDING  
-**User Story:** US-1.3  
-**Dependencies:** STEP-007  
-**Estimated Effort:** 4 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create DelegatingHandler that logs outbound HTTP calls.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Clients/LoggingHandlerTests.cs`
-  - Write test: Logs request URL and method
-  - Write test: Logs response status and duration
-  - Write test: Uses Info level for 2xx responses
-  - Write test: Uses Warning level for 4xx responses
-  - Write test: Uses Error level for 5xx responses
-  - Write test: Logs exceptions with details
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `LoggingHandler.cs` - DelegatingHandler implementation for logging outbound HTTP calls
+- ✅ `LoggingHandlerTests.cs` - Test suite with 6 comprehensive tests
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Clients/HttpClientHandlers/LoggingHandler.cs`
-  - Implement DelegatingHandler
-  - Log before and after request
-  - Use stopwatch for duration
-  - Handle exceptions
-  - Run tests → ALL PASS
+**Implementation Details:**
+- DelegatingHandler that logs all outbound HTTP requests via SendAsync override
+- Logs request URL and HTTP method before sending
+- Uses Stopwatch to measure request duration accurately
+- Logs response HTTP status code and duration after receiving response
+- Determines log level based on status code: 2xx→Info, 4xx→Warning, 5xx→Error
+- Logs exceptions with full details and exception type
+- Exceptions are logged and then re-thrown for proper error propagation
+- Integrates with ILogger<LoggingHandler> for structured logging
+- Null validation for request parameter
 
-3. **REFACTOR**
-  - Extract log message formatting
-  - Optimize stopwatch usage
-  - Run tests → ALL PASS
+**Test Coverage:**
+- SendAsync_LogsRequestUrlAndMethod() - Verifies request logging with URL and method
+- SendAsync_LogsResponseStatusAndDuration() - Verifies response logging with status and duration
+- SendAsync_Uses2xxResponseLogging() - Verifies 2xx status code handling
+- SendAsync_Uses4xxResponseLogging() - Verifies 4xx status code handling
+- SendAsync_Uses5xxResponseLogging() - Verifies 5xx status code handling
+- SendAsync_LogsExceptionsAndRethrows() - Verifies exception logging and re-throw
+- All 215 tests passing (6 new + 209 previous)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass with >90% coverage
-- [ ] Request/response logged correctly
-- [ ] Appropriate log levels used
-- [ ] Exceptions properly logged
-- [ ] Duration accurately measured
+**Log Level Strategy:**
+- Info (2xx): Successful requests logged at Information level
+- Info (3xx): Redirects logged at Information level
+- Warning (4xx): Client errors logged at Warning level for operator attention
+- Error (5xx): Server errors logged at Error level for critical attention
+- Error: Exception handling logged with full exception details at Error level
 
-#### Deliverable
-- `LoggingHandler.cs` implementation
-- `LoggingHandlerTests.cs` (min 6 tests)
+**Architecture Notes:**
+- Continues from STEP-025 (Request Logging Extension Method)
+- Ready for STEP-027 (URL Redaction)
+- Designed to be added to HttpClientBuilder pipeline
+- Works with existing HttpClient factory patterns
+- Non-blocking async implementation with proper cancellation token support
 
 ---
 
