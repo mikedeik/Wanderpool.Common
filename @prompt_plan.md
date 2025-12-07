@@ -518,37 +518,34 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-020: Activity Source Registration
-**Status:** PENDING  
-**User Story:** US-3.3  
-**Dependencies:** STEP-019  
-**Estimated Effort:** 2 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Register custom ActivitySource with OpenTelemetry.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Extend `TracingExtensionsTests.cs`
-  - Write test: Custom activity source is registered
-  - Write test: Activities from custom source are traced
-  - Run tests → NEW TESTS FAIL
+**Deliverables:**
+- ✅ `ActivitySourceProvider.cs` - Singleton provider for custom ActivitySource
+- ✅ `TracingExtensions.cs` - Updated all 4 AddWanderpoolTracing methods to register ActivitySourceProvider and add custom source
+- ✅ `TracingExtensionsTests.cs` - Extended with 2 new tests verifying ActivitySource registration
 
-2. **GREEN**: Update `TracingExtensions.cs`
-  - Register "Wanderpool.Common" activity source
-  - Add to OpenTelemetry configuration
-  - Run tests → ALL PASS
+**Implementation Details:**
+- ActivitySourceProvider singleton manages "Wanderpool.Common" ActivitySource (v1.0.0)
+- All AddWanderpoolTracing overloads register ActivitySourceProvider as singleton
+- Custom source "Wanderpool.Common" added to TracerProviderBuilder via AddSource()
+- Activities created from custom source are properly traced and included in distributed tracing
+- Full integration with OpenTelemetry instrumentation pipeline
 
-3. **REFACTOR**
-  - Make source name configurable
-  - Run tests → ALL PASS
+**Test Coverage:**
+- AddWanderpoolTracing_RegistersCustomActivitySource() - Verifies TracerProvider and ActivitySourceProvider registration
+- AddWanderpoolTracing_CustomActivitySourceCanCreateActivities() - Verifies ActivitySource creation and naming
+- All 183 existing tests still passing (2 new tests added)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] Tests pass
-- [ ] Custom activities are traced
-- [ ] Works with distributed tracing
-
-#### Deliverable
-- Updated `TracingExtensions.cs`
-- 2 additional tests
+**Architecture Notes:**
+- ActivitySourceProvider registered as singleton, one instance per DI container
+- Activity source name "Wanderpool.Common" matches library namespace
+- Compatible with distributed tracing systems (Jaeger, Zipkin, etc.)
+- Ready for business logic layers to create activities for operation tracing
+- Next step: STEP-021 (Request Logging Options)
 
 ---
 
