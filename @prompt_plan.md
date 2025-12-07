@@ -1215,40 +1215,31 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-035: Resilience Events Integration
-**Status:** PENDING  
-**User Story:** US-4.3  
-**Dependencies:** STEP-031, STEP-034  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Integrate event handlers with resilience pipeline configuration.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Extend `ConfigurableResiliencePipelineTests.cs`
-  - Write test: Retry events are logged
-  - Write test: Circuit breaker state changes are logged
-  - Write test: Timeout events are logged
-  - Write test: Hedging events are logged
-  - Run tests → NEW TESTS FAIL
+**Deliverables:**
+- ✅ `ResiliencePipelines.cs` - Updated with optional ResilienceEventHandlers parameter
+- ✅ `ConfigurableResiliencePipelineTests.cs` - Extended with 4 new tests
+  - Test: Retry event handlers work with ResilienceOptions
+  - Test: Circuit breaker event handlers work with ResilienceOptions
+  - Test: Timeout event handlers work with ResilienceOptions
+  - Test: Hedging event handlers work with ResilienceOptions
 
-2. **GREEN**: Update `ResiliencePipelines.cs`
-  - Wire up event handlers to each policy
-  - Configure logging delegates
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Optional ResilienceEventHandlers parameter in AddStandardResilienceWithOptions method
+- Event handlers can be registered in dependency injection container
+- Supports retry, circuit breaker, timeout, and hedging event logging
+- Proper error logging with event details (attempt counts, delays, etc.)
+- All event handlers are optional (nullable parameter)
+- Backwards compatible - existing code without event handlers still works
 
-3. **REFACTOR**
-  - Ensure event handlers are optional
-  - Run tests → ALL PASS
-
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Events properly logged
-- [ ] Log levels appropriate
-- [ ] Structured data included
-
-#### Deliverable
-- Updated `ResiliencePipelines.cs`
-- 4 additional tests
+**Test Results:**
+- 271 total tests passing (1 skipped)
+- All new tests passing
+- No regressions in existing tests
+- Solution builds successfully
 
 ---
 
