@@ -467,44 +467,53 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-019: Custom Activity Sources Infrastructure
-**Status:** PENDING  
-**User Story:** US-3.3  
-**Dependencies:** STEP-011  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create IActivityScope abstraction for custom business operation tracing.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Telemetry/ActivityScopeTests.cs`
-  - Write test: CreateScope creates new activity
-  - Write test: AddTag adds tag to current activity
-  - Write test: RecordException records exception on span
-  - Write test: Nested scopes create parent-child relationship
-  - Write test: Dispose completes activity
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `IActivityScope.cs` - Interface for activity scope management
+- ✅ `ActivityScope.cs` - Implementation using System.Diagnostics.ActivitySource
+- ✅ `ActivityScopeTests.cs` - Test suite with 8 comprehensive tests
+  - Tests: Creation, tags (single/multiple), exceptions, nested scopes, disposal, status
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Telemetry/IActivityScope.cs` and implementation
-  - Define IActivityScope interface
-  - Implement ActivityScope class
-  - Use System.Diagnostics.ActivitySource
-  - Run tests → ALL PASS
+**Implementation Details:**
+- IActivityScope interface providing fluent API
+  - AddTag(key, value) - adds tags/attributes to activity
+  - RecordException(exception) - records exceptions with OpenTelemetry semantics
+  - SetStatus(statusCode, description) - sets activity status
+  - Activity property - exposes underlying System.Diagnostics.Activity
+- ActivityScope implementation
+  - Uses System.Diagnostics.ActivitySource for activity creation
+  - Proper parameter validation (non-null operation names, tag keys)
+  - Exception events include type, message, and stacktrace
+  - Automatic activity disposal on scope disposal (IDisposable)
+  - Parent span ID properly propagated for nested scopes
 
-3. **REFACTOR**
-  - Add fluent API for tags
-  - Optimize activity creation
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Activity creation with display name verification
+- Single and multiple tag addition
+- Exception recording with OpenTelemetry standard event format
+- Parent-child activity relationships in nested scopes
+- Activity disposal and lifecycle completion
+- SetStatus with ActivityStatusCode enum
+- IDisposable interface implementation
+- All 181 tests passing (8 new for STEP-019)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass with >85% coverage
-- [ ] Interface is intuitive
-- [ ] Nested spans work correctly
-- [ ] Exception recording works
+**Architecture Notes:**
+- IActivityScope ready for dependency injection
+- ActivityScope wraps ActivitySource.StartActivity()
+- Exception events follow OpenTelemetry semantic conventions
+- Compatible with OpenTelemetry instrumentation pipeline
+- Next step: Register ActivitySource in TracingExtensions (STEP-020)
+- Designed for use in business logic layers for operation tracing
 
-#### Deliverable
-- `IActivityScope.cs` interface
-- `ActivityScope.cs` implementation
-- `ActivityScopeTests.cs` (min 5 tests)
+**Design Pattern:**
+- Fluent API for chainable method calls
+- Scoped lifetime management via using statements
+- Automatic resource cleanup via IDisposable
+- Activity nesting via parent-child relationships
 
 ---
 
