@@ -84,7 +84,20 @@ public static class CorrelationIdExtensions
     /// <returns>The application builder for method chaining.</returns>
     public static WebApplication UseWanderpoolCorrelationId(this WebApplication app)
     {
-        app.UseMiddleware<CorrelationIdMiddleware>();
+        ((IApplicationBuilder)app).UseWanderpoolCorrelationId();
         return app;
+    }
+
+    /// <summary>
+    /// Adds the correlation ID middleware to the request pipeline.
+    /// This middleware should be registered early in the pipeline to ensure
+    /// correlation ID is available for all subsequent middleware.
+    /// </summary>
+    /// <param name="builder">The application builder.</param>
+    /// <returns>The application builder for method chaining.</returns>
+    public static IApplicationBuilder UseWanderpoolCorrelationId(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<CorrelationIdMiddleware>();
+        return builder;
     }
 }
