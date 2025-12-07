@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Wanderpool.Common.Infra.Clients.HttpClientHandlers;
@@ -6,10 +7,32 @@ namespace Wanderpool.Common.Infra.Clients.HttpClientHandlers;
 /// <summary>
 /// DelegatingHandler that logs outbound HTTP requests and responses.
 /// Logs request details before sending and response details after receiving.
+/// Redacts sensitive query parameters (token, key, password, api-key, etc.).
 /// </summary>
 public class LoggingHandler : DelegatingHandler
 {
     private readonly ILogger<LoggingHandler> _logger;
+
+    /// <summary>
+    /// Sensitive query parameter names that should be redacted from logs.
+    /// Case-insensitive matching.
+    /// </summary>
+    private static readonly HashSet<string> SensitiveQueryParams = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "token",
+        "key",
+        "password",
+        "api-key",
+        "api_key",
+        "secret",
+        "authorization",
+        "auth_token",
+        "access_token",
+        "refresh_token",
+        "bearer",
+        "x-api-key",
+        "x-auth-token"
+    };
 
     /// <summary>
     /// Initializes a new instance of the LoggingHandler class.
@@ -60,14 +83,16 @@ public class LoggingHandler : DelegatingHandler
     }
 
     /// <summary>
-    /// Logs the outbound HTTP request details.
+    /// Logs the outbound HTTP request details with redacted sensitive query parameters.
     /// </summary>
     private void LogRequest(HttpRequestMessage request)
     {
+        var redactedUri = RedactSensitiveQueryParams(request.RequestUri);
+
         _logger.LogInformation(
             "Outbound HTTP {HttpMethod} request to {RequestUri}",
             request.Method,
-            request.RequestUri);
+            redactedUri);
     }
 
     /// <summary>
@@ -76,12 +101,13 @@ public class LoggingHandler : DelegatingHandler
     private void LogResponse(HttpRequestMessage request, HttpResponseMessage response, long elapsedMilliseconds)
     {
         var logLevel = DetermineLogLevel(response.StatusCode);
+        var redactedUri = RedactSensitiveQueryParams(request.RequestUri);
 
         _logger.Log(
             logLevel,
             "Outbound HTTP {StatusCode} response from {RequestUri} | Duration: {ElapsedMilliseconds}ms",
             (int)response.StatusCode,
-            request.RequestUri,
+            redactedUri,
             elapsedMilliseconds);
     }
 
@@ -90,10 +116,12 @@ public class LoggingHandler : DelegatingHandler
     /// </summary>
     private void LogException(HttpRequestMessage request, Exception exception, long elapsedMilliseconds)
     {
+        var redactedUri = RedactSensitiveQueryParams(request.RequestUri);
+
         _logger.LogError(
             exception,
             "Outbound HTTP request to {RequestUri} failed with exception | Duration: {ElapsedMilliseconds}ms | Exception: {ExceptionType}",
-            request.RequestUri,
+            redactedUri,
             elapsedMilliseconds,
             exception.GetType().Name);
     }
@@ -111,5 +139,50 @@ public class LoggingHandler : DelegatingHandler
             >= 500 => LogLevel.Error,
             _ => LogLevel.Information
         };
+    }
+
+    /// <summary>
+    /// Redacts sensitive query parameters from a URI.
+    /// Replaces values of sensitive parameters with [REDACTED].
+    /// </summary>
+    /// <param name="uri">The URI to redact.</param>
+    /// <returns>The URI with sensitive query parameters redacted, or original if null.</returns>
+    private static string? RedactSensitiveQueryParams(Uri? uri)
+    {
+        if (uri == null)
+            return null;
+
+        if (string.IsNullOrEmpty(uri.Query))
+            return uri.ToString();
+
+        // Parse query string and redact sensitive parameters
+        var query = uri.Query.TrimStart('?');
+        var parameters = query.Split('&', StringSplitOptions.RemoveEmptyEntries);
+        var redactedParams = new List<string>();
+
+        foreach (var param in parameters)
+        {
+            var parts = param.Split('=', 2);
+            var paramName = parts[0];
+            var paramValue = parts.Length > 1 ? parts[1] : string.Empty;
+
+            // Check if this parameter name is sensitive
+            if (SensitiveQueryParams.Contains(paramName))
+            {
+                redactedParams.Add($"{paramName}=[REDACTED]");
+            }
+            else
+            {
+                redactedParams.Add(param);
+            }
+        }
+
+        var redactedQuery = string.Join("&", redactedParams);
+        var uriBuilder = new UriBuilder(uri)
+        {
+            Query = redactedQuery
+        };
+
+        return uriBuilder.Uri.ToString();
     }
 }
