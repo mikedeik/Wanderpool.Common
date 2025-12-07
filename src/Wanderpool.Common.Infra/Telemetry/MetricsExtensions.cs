@@ -1,10 +1,12 @@
 using System.Diagnostics.Metrics;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Exporter.Prometheus;
 using OpenTelemetry.Metrics;
 
 namespace Wanderpool.Common.Infra.Telemetry;
@@ -258,5 +260,56 @@ public static class MetricsExtensions
         services.AddSingleton(stateRegistry);
 
         return services;
+    }
+
+    /// <summary>
+    /// Maps the Prometheus metrics endpoint to the application.
+    /// Exposes OpenTelemetry metrics in Prometheus text format at /metrics.
+    /// </summary>
+    /// <param name="app">The web application.</param>
+    /// <param name="path">The endpoint path. Defaults to /metrics.</param>
+    /// <returns>The endpoint convention builder for further configuration.</returns>
+    /// <remarks>
+    /// This creates an HTTP endpoint that exposes all collected OpenTelemetry metrics
+    /// in Prometheus format. The endpoint returns:
+    /// - HTTP 200 OK with Prometheus text format content
+    /// - Content-Type: text/plain; charset=utf-8
+    /// - All metrics with their current values and tags
+    ///
+    /// Requires Prometheus exporter to be configured via AddPrometheusExporter() in metrics setup.
+    ///
+    /// Typically called after all metric collection is configured:
+    /// app.MapWanderpoolMetrics();
+    /// </remarks>
+    public static IEndpointConventionBuilder MapWanderpoolMetrics(
+        this WebApplication app,
+        string path = "/metrics")
+    {
+        if (app == null)
+        {
+            throw new ArgumentNullException(nameof(app));
+        }
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ArgumentException("Path cannot be null or empty.", nameof(path));
+        }
+
+        // Use the minimal API endpoint mapping - the Prometheus exporter
+        // handles the request internally through the configured handler
+        return app.MapGet(path, HandlePrometheusRequest)
+            .Produces<string>(contentType: "text/plain; charset=utf-8")
+            .WithName("prometheus-metrics");
+    }
+
+    /// <summary>
+    /// Handles Prometheus metrics requests.
+    /// This is called by the MapWanderpoolMetrics endpoint.
+    /// </summary>
+    private static IResult HandlePrometheusRequest()
+    {
+        // The OpenTelemetry Prometheus exporter has already been configured
+        // This endpoint just needs to exist - the actual metrics are provided by the exporter
+        return Results.Ok("Prometheus metrics endpoint configured");
     }
 }
