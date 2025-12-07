@@ -297,6 +297,82 @@ public class LoggingHandlerTests
     }
 
     /// <summary>
+    /// Test: Client name is included in logs when available.
+    /// </summary>
+    [Fact]
+    public async Task SendAsync_IncludesClientNameInLogs()
+    {
+        // Arrange
+        var logMessages = new List<string>();
+        var mockLogger = new MockLogger(logMessages);
+        var loggingHandler = new Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler(mockLogger);
+        var innerHandler = new MockLoggingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        loggingHandler.InnerHandler = innerHandler;
+        var client = new HttpClient(loggingHandler);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+        request.Options.Set(new HttpRequestOptionsKey<string>("ClientName"), "HotelApiClient");
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        var logOutput = string.Join(" ", logMessages);
+        Assert.Contains("HotelApiClient", logOutput);
+    }
+
+    /// <summary>
+    /// Test: Falls back to "Unknown" when client name is not set.
+    /// </summary>
+    [Fact]
+    public async Task SendAsync_FallsBackToUnknownWhenNameNotSet()
+    {
+        // Arrange
+        var logMessages = new List<string>();
+        var mockLogger = new MockLogger(logMessages);
+        var loggingHandler = new Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler(mockLogger);
+        var innerHandler = new MockLoggingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        loggingHandler.InnerHandler = innerHandler;
+        var client = new HttpClient(loggingHandler);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+        // No client name set
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        var logOutput = string.Join(" ", logMessages);
+        Assert.Contains("Unknown", logOutput);
+    }
+
+    /// <summary>
+    /// Test: Client name extracted from request options.
+    /// </summary>
+    [Fact]
+    public async Task SendAsync_ExtractsClientNameFromRequestOptions()
+    {
+        // Arrange
+        var logMessages = new List<string>();
+        var mockLogger = new MockLogger(logMessages);
+        var loggingHandler = new Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler(mockLogger);
+        var innerHandler = new MockLoggingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        loggingHandler.InnerHandler = innerHandler;
+        var client = new HttpClient(loggingHandler);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+        const string clientName = "FlightApiClient";
+        request.Options.Set(new HttpRequestOptionsKey<string>("ClientName"), clientName);
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        var logOutput = string.Join(" ", logMessages);
+        Assert.Contains(clientName, logOutput);
+    }
+
+    /// <summary>
     /// Mock logger for testing that captures log messages.
     /// </summary>
     private class MockLogger : ILogger<Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler>

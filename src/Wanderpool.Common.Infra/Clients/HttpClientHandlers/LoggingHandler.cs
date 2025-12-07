@@ -88,11 +88,13 @@ public class LoggingHandler : DelegatingHandler
     private void LogRequest(HttpRequestMessage request)
     {
         var redactedUri = RedactSensitiveQueryParams(request.RequestUri);
+        var clientName = GetClientName(request);
 
         _logger.LogInformation(
-            "Outbound HTTP {HttpMethod} request to {RequestUri}",
+            "Outbound HTTP {HttpMethod} request to {RequestUri} from client {ClientName}",
             request.Method,
-            redactedUri);
+            redactedUri,
+            clientName);
     }
 
     /// <summary>
@@ -102,12 +104,14 @@ public class LoggingHandler : DelegatingHandler
     {
         var logLevel = DetermineLogLevel(response.StatusCode);
         var redactedUri = RedactSensitiveQueryParams(request.RequestUri);
+        var clientName = GetClientName(request);
 
         _logger.Log(
             logLevel,
-            "Outbound HTTP {StatusCode} response from {RequestUri} | Duration: {ElapsedMilliseconds}ms",
+            "Outbound HTTP {StatusCode} response from {RequestUri} (client: {ClientName}) | Duration: {ElapsedMilliseconds}ms",
             (int)response.StatusCode,
             redactedUri,
+            clientName,
             elapsedMilliseconds);
     }
 
@@ -117,11 +121,13 @@ public class LoggingHandler : DelegatingHandler
     private void LogException(HttpRequestMessage request, Exception exception, long elapsedMilliseconds)
     {
         var redactedUri = RedactSensitiveQueryParams(request.RequestUri);
+        var clientName = GetClientName(request);
 
         _logger.LogError(
             exception,
-            "Outbound HTTP request to {RequestUri} failed with exception | Duration: {ElapsedMilliseconds}ms | Exception: {ExceptionType}",
+            "Outbound HTTP request to {RequestUri} (client: {ClientName}) failed with exception | Duration: {ElapsedMilliseconds}ms | Exception: {ExceptionType}",
             redactedUri,
+            clientName,
             elapsedMilliseconds,
             exception.GetType().Name);
     }
@@ -184,5 +190,23 @@ public class LoggingHandler : DelegatingHandler
         };
 
         return uriBuilder.Uri.ToString();
+    }
+
+    /// <summary>
+    /// Extracts the client name from HttpRequestMessage options.
+    /// Falls back to "Unknown" if no client name is available.
+    /// </summary>
+    /// <param name="request">The HTTP request message.</param>
+    /// <returns>The client name or "Unknown" if not set.</returns>
+    private static string GetClientName(HttpRequestMessage request)
+    {
+        // Try to get the client name from request options
+        if (request.Options.TryGetValue(new HttpRequestOptionsKey<string>("ClientName"), out var clientName) && !string.IsNullOrEmpty(clientName))
+        {
+            return clientName;
+        }
+
+        // Fallback to "Unknown"
+        return "Unknown";
     }
 }
