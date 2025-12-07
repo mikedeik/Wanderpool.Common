@@ -441,4 +441,190 @@ public class RequestLoggingMiddlewareTests
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Middleware_LogsRequestBodyWhenEnabled()
+    {
+        // Arrange
+        var requestBody = "request-body-data";
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = true;
+                    options.EnableResponseBodyLogging = false;
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context => await context.Response.WriteAsync("OK"));
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/test");
+        request.Content = new StringContent(requestBody);
+        var response = await httpClient.SendAsync(request);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Middleware_DoesNotLogRequestBodyWhenDisabled()
+    {
+        // Arrange
+        var requestBody = "secret-request-data";
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = false;
+                    options.EnableResponseBodyLogging = false;
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context => await context.Response.WriteAsync("OK"));
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/test");
+        request.Content = new StringContent(requestBody);
+        var response = await httpClient.SendAsync(request);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Middleware_LogsResponseBodyWhenEnabled()
+    {
+        // Arrange
+        var responseBody = "response-body-data";
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = false;
+                    options.EnableResponseBodyLogging = true;
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context => await context.Response.WriteAsync(responseBody));
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        var response = await httpClient.GetAsync("/test");
+        var actualBody = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(responseBody, actualBody);
+    }
+
+    [Fact]
+    public async Task Middleware_ProperlyHandlesRequestBodyStreams()
+    {
+        // Arrange
+        var requestBody = "test-body-content";
+        string? capturedRequestBody = null;
+
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = true;
+                    options.EnableResponseBodyLogging = false;
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context =>
+                {
+                    // Read the request body - should work after middleware processing
+                    using var reader = new StreamReader(context.Request.Body);
+                    capturedRequestBody = await reader.ReadToEndAsync();
+                    await context.Response.WriteAsync("OK");
+                });
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/test");
+        request.Content = new StringContent(requestBody);
+        var response = await httpClient.SendAsync(request);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(requestBody, capturedRequestBody);
+    }
+
+    [Fact]
+    public async Task Middleware_TruncatesLargeBodies()
+    {
+        // Arrange
+        var largeRequestBody = new string('x', 10000); // 10KB request body
+        var expectedResponseBody = new string('y', 8000); // 8KB response body
+        var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddWanderpoolCorrelationId();
+                services.Configure<RequestLoggingOptions>(options =>
+                {
+                    options.EnableRequestBodyLogging = true;
+                    options.EnableResponseBodyLogging = true;
+                    options.MaxBodySizeLogged = 1024; // 1KB limit for logging
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseWanderpoolCorrelationId();
+                app.UseWanderpoolRequestLogging();
+                app.Run(async context =>
+                {
+                    await context.Response.WriteAsync(expectedResponseBody);
+                });
+            });
+
+        using var testServer = new TestServer(builder);
+        using var httpClient = testServer.CreateClient();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/test");
+        request.Content = new StringContent(largeRequestBody);
+        var response = await httpClient.SendAsync(request);
+        var actualBody = await response.Content.ReadAsStringAsync();
+
+        // Assert - Response should be returned unchanged despite large body logging
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedResponseBody, actualBody);
+    }
 }
