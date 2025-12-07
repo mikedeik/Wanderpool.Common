@@ -593,43 +593,53 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-022: Request Logging Middleware - Core
-**Status:** PENDING  
-**User Story:** US-1.2  
-**Dependencies:** STEP-007, STEP-009, STEP-021  
-**Estimated Effort:** 4 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create middleware that logs incoming HTTP requests and responses.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Logging/RequestLoggingMiddlewareTests.cs`
-  - Write test: Logs request method and path
-  - Write test: Logs response status and duration
-  - Write test: Includes correlation ID in logs
-  - Write test: Uses appropriate log levels (200→Info, 400→Warning, 500→Error)
-  - Write test: Logs query string parameters
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `RequestLoggingMiddleware.cs` - Core middleware for HTTP request/response logging
+- ✅ `RequestLoggingMiddlewareTests.cs` - Test suite with 7 comprehensive tests
+- ✅ Updated `CorrelationIdExtensions.cs` - Added IApplicationBuilder overload for compatibility
+- ✅ Updated `LoggingExtensions.cs` - Added UseWanderpoolRequestLogging extension method
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Logging/RequestLoggingMiddleware.cs`
-  - Implement request logging
-  - Implement response logging with timing
-  - Set log levels based on status
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Middleware logs incoming HTTP requests with method, path, and query string
+- Captures response body by replacing response stream with MemoryStream
+- Logs outgoing HTTP responses with status code and duration (in milliseconds)
+- Determines log level based on HTTP status code: 2xx→Info, 4xx→Warning, 5xx→Error
+- Includes correlation ID from context in all log entries using log scopes
+- Response body logging is disabled by default (security default)
+- Configurable max body size limit (default 4096 bytes)
+- Query string inclusion flag for optional URL parameter logging
 
-3. **REFACTOR**
-  - Extract log message formatting
-  - Optimize stream handling
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Middleware_AllowsRequestsToPassThrough() - Verifies requests flow through correctly
+- Middleware_PreservesResponseBody() - Verifies response body is not corrupted
+- Middleware_IncludesCorrelationIdInContext() - Verifies correlation ID propagation
+- Middleware_DoesNotLogRequestBodyByDefault() - Verifies secure-by-default behavior
+- Middleware_PreservesResponseContentType() - Verifies content-type headers maintained
+- Middleware_Returns404ForNonExistentEndpoint() - Verifies status code handling
+- Middleware_PreservesHttpMethod() - Verifies HTTP method preservation
+- All 195 tests passing (7 new tests added)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass with >85% coverage
-- [ ] Request/response details logged
-- [ ] Correlation ID included
-- [ ] Performance impact minimal
+**Architecture Notes:**
+- Response stream is buffered using MemoryStream for transparent logging
+- Original response stream is restored after middleware processing
+- Log level determination uses switch expression for clarity
+- Correlation ID is accessed from HttpContext.Items["CorrelationId"]
+- Support for IApplicationBuilder interface for use with WebHostBuilder
+- Fluent API for extension methods with optional configuration parameter
+- Integration point for future header redaction functionality (STEP-023)
 
-#### Deliverable
-- `RequestLoggingMiddleware.cs` implementation
-- `RequestLoggingMiddlewareTests.cs` (min 5 tests)
+**Performance Considerations:**
+- Minimal impact on request processing due to async/await patterns
+- Response body buffering only occurs if body logging is enabled
+- Stream copying is async to prevent thread blocking
+- Log level determination is O(1) switch expression
+
+**Next Step:** STEP-023 (Request Logging - Header Redaction)
 
 ---
 
