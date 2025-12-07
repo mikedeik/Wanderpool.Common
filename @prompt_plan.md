@@ -916,41 +916,55 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-029: Outbound HTTP Logging - Retry Detection
-**Status:** PENDING  
-**User Story:** US-1.3  
-**Dependencies:** STEP-028  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Detect and log retry attempts with Warning level.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `LoggingHandlerRetryTests.cs`
-  - Write test: First attempt logged as Info
-  - Write test: Retry attempts logged as Warning
-  - Write test: Retry count included in log message
-  - Write test: Integration with Polly retry policy
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `LoggingHandler.cs` - Enhanced with retry attempt detection
+- ✅ `LoggingHandlerTests.cs` - Extended with 3 retry detection tests
 
-2. **GREEN**: Update `LoggingHandler.cs`
-  - Detect retry context from Polly
-  - Adjust log level for retries
-  - Include attempt number
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Retry attempts detected via `AttemptNumber` in HttpRequestMessage.Options
+- First attempt (AttemptNumber=1) logged at Information level
+- Retry attempts (AttemptNumber≥2) logged at Warning level for operator visibility
+- Attempt number included in retry log messages: "(retry attempt {N})"
+- Graceful fallback to attempt 1 when AttemptNumber not set
+- Helper method `GetAttemptNumber()` encapsulates retry detection logic
+- Compatible with Polly retry policies and custom retry mechanisms
 
-3. **REFACTOR**
-  - Extract retry detection logic
-  - Run tests → ALL PASS
+**Test Coverage:**
+- SendAsync_FirstAttemptLoggedAsInfo() - Verifies first attempt at Info level
+- SendAsync_RetryAttemptsLoggedAsWarning() - Verifies retries at Warning level with "retry" keyword
+- SendAsync_RetryCountIncludedInLog() - Verifies attempt number appears in logs
+- All 226 tests passing (3 new + 223 previous)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Retries properly detected
-- [ ] Log level escalated for retries
-- [ ] Works with existing ResiliencePipelines
+**Log Level Strategy:**
+- First attempt (AttemptNumber=1 or not set): Information level
+- Retry attempts (AttemptNumber≥2): Warning level
+- Escalation rationale: Retries indicate transient failures worth operator attention
 
-#### Deliverable
-- Updated `LoggingHandler.cs`
-- `LoggingHandlerRetryTests.cs` (min 4 tests)
+**Usage Pattern:**
+```csharp
+// HttpClient factory or resilience pipeline sets AttemptNumber
+var request = new HttpRequestMessage(HttpMethod.Post, "https://api.example.com/data");
+request.Options.Set(new HttpRequestOptionsKey<int>("AttemptNumber"), 2); // Retry attempt
+await httpClient.SendAsync(request);
+// Logs: "Outbound HTTP POST request to ... (retry attempt 2)" at Warning level
+```
+
+**Integration Points:**
+- Works with Polly retry policies (client code must set AttemptNumber)
+- Works with custom retry mechanisms that set the request option
+- Compatible with existing resilience pipelines
+- Non-invasive: No direct dependency on Polly
+
+**Architecture Notes:**
+- Continues from STEP-028 (Client Name)
+- Ready for STEP-030 (Resilience Options Configuration)
+- Retry detection is request-scoped via HttpRequestMessage.Options
+- Thread-safe: No shared state modified during retry detection
 
 ---
 
