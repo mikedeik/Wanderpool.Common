@@ -49,6 +49,9 @@ public static class TracingExtensions
         serviceName ??= Assembly.GetCallingAssembly().GetName().Name ?? "UnknownService";
         var serviceVersion = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "1.0.0";
 
+        // Register the custom ActivitySourceProvider for business logic tracing
+        services.AddSingleton<ActivitySourceProvider>();
+
         services
             .AddOpenTelemetry()
             .WithTracing(traceBuilder =>
@@ -57,6 +60,9 @@ public static class TracingExtensions
                     // Set resource name and version
                     .SetResourceBuilder(ResourceBuilder.CreateDefault()
                         .AddService(serviceName, serviceVersion: serviceVersion))
+
+                    // Add custom Wanderpool activity source
+                    .AddSource("Wanderpool.Common")
 
                     // Add ASP.NET Core instrumentation for incoming requests
                     .AddAspNetCoreInstrumentation(options =>
@@ -147,6 +153,9 @@ public static class TracingExtensions
         serviceName ??= Assembly.GetCallingAssembly().GetName().Name ?? "UnknownService";
         var serviceVersion = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "1.0.0";
 
+        // Register the custom ActivitySourceProvider for business logic tracing
+        services.AddSingleton<ActivitySourceProvider>();
+
         services
             .AddOpenTelemetry()
             .WithTracing(traceBuilder =>
@@ -154,6 +163,9 @@ public static class TracingExtensions
                 traceBuilder
                     .SetResourceBuilder(ResourceBuilder.CreateDefault()
                         .AddService(serviceName, serviceVersion: serviceVersion))
+
+                    // Add custom Wanderpool activity source
+                    .AddSource("Wanderpool.Common")
 
                     .AddAspNetCoreInstrumentation(options =>
                     {
@@ -247,6 +259,9 @@ public static class TracingExtensions
         // Configure OpenTelemetryConfiguration from appsettings
         services.Configure<OpenTelemetryConfiguration>(configuration.GetSection(OpenTelemetryConfiguration.Name));
 
+        // Register the custom ActivitySourceProvider for business logic tracing
+        services.AddSingleton<ActivitySourceProvider>();
+
         serviceName ??= Assembly.GetCallingAssembly().GetName().Name ?? "UnknownService";
         var serviceVersion = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "1.0.0";
 
@@ -261,6 +276,9 @@ public static class TracingExtensions
                     // Set resource name and version
                     .SetResourceBuilder(ResourceBuilder.CreateDefault()
                         .AddService(serviceName, serviceVersion: serviceVersion))
+
+                    // Add custom Wanderpool activity source
+                    .AddSource("Wanderpool.Common")
 
                     // Add ASP.NET Core instrumentation
                     .AddAspNetCoreInstrumentation(options =>
@@ -415,6 +433,9 @@ public static class TracingExtensions
         // Configure OpenTelemetryConfiguration from appsettings
         services.Configure<OpenTelemetryConfiguration>(configuration.GetSection(OpenTelemetryConfiguration.Name));
 
+        // Register the custom ActivitySourceProvider for business logic tracing
+        services.AddSingleton<ActivitySourceProvider>();
+
         serviceName ??= Assembly.GetCallingAssembly().GetName().Name ?? "UnknownService";
         var serviceVersion = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "1.0.0";
 
@@ -429,6 +450,9 @@ public static class TracingExtensions
                     // Set resource name and version
                     .SetResourceBuilder(ResourceBuilder.CreateDefault()
                         .AddService(serviceName, serviceVersion: serviceVersion))
+
+                    // Add custom Wanderpool activity source
+                    .AddSource("Wanderpool.Common")
 
                     // Add ASP.NET Core instrumentation
                     .AddAspNetCoreInstrumentation(options =>
