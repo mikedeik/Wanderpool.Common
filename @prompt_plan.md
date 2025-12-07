@@ -870,38 +870,48 @@ Common variations covered:
 ---
 
 ### STEP-028: Outbound HTTP Logging - Client Name
-**Status:** PENDING  
-**User Story:** US-1.3  
-**Dependencies:** STEP-027  
-**Estimated Effort:** 2 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Include HTTP client name in logs for better traceability.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Extend `LoggingHandlerTests.cs`
-  - Write test: Client name included in logs when available
-  - Write test: Falls back to "Unknown" when name not set
-  - Write test: Client name extracted from request options
-  - Run tests → NEW TESTS FAIL
+**Deliverables:**
+- ✅ `LoggingHandler.cs` - Enhanced with client name extraction and logging
+- ✅ `LoggingHandlerTests.cs` - Extended with 3 additional client name tests
 
-2. **GREEN**: Update `LoggingHandler.cs`
-  - Extract client name from HttpRequestMessage.Options
-  - Include in all log messages
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Client name extracted from `HttpRequestMessage.Options` using key "ClientName"
+- Client name included in request, response, and exception logs
+- Graceful fallback to "Unknown" when client name not set or is null/empty
+- Helper method `GetClientName()` encapsulates client name resolution logic
+- Client name shown in parentheses in response and exception logs: "(client: ClientName)"
+- Thread-safe implementation: Uses standard HttpRequestOptionsKey<string> pattern
 
-3. **REFACTOR**
-  - Extract client name resolution to helper
-  - Run tests → ALL PASS
+**Test Coverage:**
+- SendAsync_IncludesClientNameInLogs() - Verifies client name logged when available
+- SendAsync_FallsBackToUnknownWhenNameNotSet() - Verifies Unknown fallback
+- SendAsync_ExtractsClientNameFromRequestOptions() - Verifies proper extraction from options
+- All 223 tests passing (3 new + 220 previous)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Client name properly extracted
-- [ ] Graceful fallback for missing name
+**Usage Pattern:**
+```csharp
+var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+request.Options.Set(new HttpRequestOptionsKey<string>("ClientName"), "HotelApiClient");
+await httpClient.SendAsync(request);
+// Logs: "Outbound HTTP GET request to https://api.example.com/data from client HotelApiClient"
+```
 
-#### Deliverable
-- Updated `LoggingHandler.cs`
-- 3 additional tests
+**Log Message Format:**
+- Request: "Outbound HTTP {Method} request to {URI} from client {ClientName}"
+- Response: "Outbound HTTP {Status} response from {URI} (client: {ClientName}) | Duration: {ms}ms"
+- Exception: "Outbound HTTP request to {URI} (client: {ClientName}) failed with exception..."
+
+**Architecture Notes:**
+- Continues from STEP-027 (URL Redaction)
+- Ready for STEP-029 (Retry Detection)
+- Client name can be set by HttpClientFactory during request creation
+- Compatible with existing logging infrastructure
+- Maintains backward compatibility with requests without client name set
 
 ---
 
