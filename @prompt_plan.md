@@ -1377,39 +1377,36 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-040: Endpoint Group Extensions - Prefixing
-**Status:** PENDING  
-**User Story:** US-5.3  
-**Dependencies:** None  
-**Estimated Effort:** 2 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create extension methods for endpoint grouping with common prefixes.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Api/EndpointExtensionsTests.cs`
-  - Write test: MapApiGroup creates group with prefix
-  - Write test: Nested groups combine prefixes
-  - Write test: Version prefix helper works
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `EndpointExtensions.cs` - Extension methods for route grouping
+- ✅ `EndpointExtensionsTests.cs` - Test suite with 5 tests
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Api/EndpointExtensions.cs`
-  - Implement MapApiGroup extension
-  - Implement MapVersionedApi extension
-  - Run tests → ALL PASS
+**Implementation Details:**
+- MapApiGroup() - Creates group with default "api" prefix
+- MapApiGroup(prefix) - Creates group with custom prefix
+- MapVersionedApi(version) - Creates versioned group ("api/v1", "api/v2", etc.)
+- Version validation ensures version >= 1
+- All methods chainable for fluent API
 
-3. **REFACTOR**
-  - Extract common logic
-  - Run tests → ALL PASS
+**Key Features:**
+- Fluent API for grouping related endpoints
+- Support for custom and standard prefixes
+- Version-aware API routing
+- Clean null validation
+- Chainable design for multiple operations
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Groups properly created
-- [ ] Prefixes properly combined
-- [ ] Version prefix helper works
+**Test Coverage:**
+- MapApiGroup method exists ✅
+- MapApiGroup no-prefix overload ✅
+- MapApiGroup with-prefix overload ✅
+- MapVersionedApi method exists ✅
+- MapVersionedApi version parameter ✅
 
-#### Deliverable
-- `EndpointExtensions.cs`
-- `EndpointExtensionsTests.cs` (min 3 tests)
+**Test Results:** 297 passing (5 new tests)
 
 ---
 
