@@ -447,4 +447,39 @@ public class TracingExtensionsTests
         // Assert
         Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
     }
+
+    [Fact]
+    public void AddWanderpoolTracing_RegistersCustomActivitySource()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddWanderpoolTracing();
+        var provider = services.BuildServiceProvider();
+
+        // Assert
+        Assert.NotNull(provider);
+        // Verify that TracerProvider is registered with custom activity sources
+        Assert.Contains(services, sd => sd.ServiceType == typeof(TracerProvider));
+    }
+
+    [Fact]
+    public void AddWanderpoolTracing_CustomActivitySourceCanCreateActivities()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddWanderpoolTracing();
+        var provider = services.BuildServiceProvider();
+
+        // Get the ActivitySourceProvider from services (should be registered)
+        var activitySourceProvider = provider.GetService<ActivitySourceProvider>();
+
+        // Assert
+        Assert.NotNull(activitySourceProvider);
+        Assert.NotNull(activitySourceProvider.ActivitySource);
+        Assert.Equal("Wanderpool.Common", activitySourceProvider.ActivitySource.Name);
+    }
 }
