@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Timeout;
@@ -39,9 +40,11 @@ public static class ResiliencePipelines
     /// </summary>
     /// <param name="clientBuilder">The HTTP client builder.</param>
     /// <param name="options">The resilience options instance.</param>
+    /// <param name="eventHandlers">Optional event handlers for logging resilience events.</param>
     public static void AddStandardResilienceWithOptions(
         this IHttpClientBuilder clientBuilder,
-        ResilienceOptions options)
+        ResilienceOptions options,
+        ResilienceEventHandlers? eventHandlers = null)
     {
         ArgumentNullException.ThrowIfNull(clientBuilder);
         ArgumentNullException.ThrowIfNull(options);

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using Wanderpool.Common.Infra.Policies;
 
@@ -194,5 +195,156 @@ public class ConfigurableResiliencePipelineTests
         Assert.Equal(3, options.Retry.MaxRetryAttempts); // default
         Assert.Equal(0.4, options.CircuitBreaker.FailureRatio);
         Assert.False(options.Hedging.Enabled); // default
+    }
+
+    /// <summary>
+    /// Mock logger for capturing logged events.
+    /// </summary>
+    private class MockLogger : ILogger
+    {
+        public List<(LogLevel Level, string Message, Exception? Exception)> LogEntries { get; } = new();
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            LogEntries.Add((logLevel, formatter(state, exception), exception));
+        }
+    }
+
+    /// <summary>
+    /// Test: Retry event handler can be instantiated and called with ResilienceOptions.
+    /// </summary>
+    [Fact]
+    public void AddStandardResilienceWithOptions_CanUseRetryEventHandlers()
+    {
+        // Arrange
+        var logger = new MockLogger();
+        var eventHandlers = new ResilienceEventHandlers(logger);
+        var options = new ResilienceOptions
+        {
+            Retry = new ResilienceOptions.RetryPolicyOptions { MaxRetryAttempts = 2 }
+        };
+
+        var services = new ServiceCollection();
+        services.AddSingleton<ILogger>(logger);
+        services.AddSingleton<ResilienceEventHandlers>(eventHandlers);
+        services.AddHttpClient("TestClient")
+            .AddStandardResilienceWithOptions(options);
+
+        var provider = services.BuildServiceProvider();
+
+        // Act
+        var retrievedHandlers = provider.GetRequiredService<ResilienceEventHandlers>();
+        retrievedHandlers.OnRetry(1, TimeSpan.FromMilliseconds(100), new HttpRequestException("Service unavailable"));
+
+        // Assert
+        Assert.NotEmpty(logger.LogEntries);
+        var retryLog = logger.LogEntries.First();
+        Assert.Equal(LogLevel.Warning, retryLog.Level);
+        Assert.Contains("retry", retryLog.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Test: Circuit breaker event handlers can be instantiated and called with ResilienceOptions.
+    /// </summary>
+    [Fact]
+    public void AddStandardResilienceWithOptions_CanUseCircuitBreakerEventHandlers()
+    {
+        // Arrange
+        var logger = new MockLogger();
+        var eventHandlers = new ResilienceEventHandlers(logger);
+        var options = new ResilienceOptions
+        {
+            CircuitBreaker = new ResilienceOptions.CircuitBreakerPolicyOptions { FailureRatio = 0.5 }
+        };
+
+        var services = new ServiceCollection();
+        services.AddSingleton<ILogger>(logger);
+        services.AddSingleton<ResilienceEventHandlers>(eventHandlers);
+        services.AddHttpClient("TestClient")
+            .AddStandardResilienceWithOptions(options);
+
+        var provider = services.BuildServiceProvider();
+
+        // Act
+        var retrievedHandlers = provider.GetRequiredService<ResilienceEventHandlers>();
+        retrievedHandlers.OnCircuitBreakerOpened();
+        retrievedHandlers.OnCircuitBreakerHalfOpen();
+        retrievedHandlers.OnCircuitBreakerClosed();
+
+        // Assert
+        Assert.Equal(3, logger.LogEntries.Count);
+        Assert.Equal(LogLevel.Warning, logger.LogEntries[0].Level);
+        Assert.Contains("circuit breaker", logger.LogEntries[0].Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(LogLevel.Information, logger.LogEntries[1].Level);
+        Assert.Equal(LogLevel.Information, logger.LogEntries[2].Level);
+    }
+
+    /// <summary>
+    /// Test: Timeout event handler can be instantiated and called with ResilienceOptions.
+    /// </summary>
+    [Fact]
+    public void AddStandardResilienceWithOptions_CanUseTimeoutEventHandlers()
+    {
+        // Arrange
+        var logger = new MockLogger();
+        var eventHandlers = new ResilienceEventHandlers(logger);
+        var options = new ResilienceOptions
+        {
+            Timeout = new ResilienceOptions.TimeoutPolicyOptions { TimeoutSeconds = 10 }
+        };
+
+        var services = new ServiceCollection();
+        services.AddSingleton<ILogger>(logger);
+        services.AddSingleton<ResilienceEventHandlers>(eventHandlers);
+        services.AddHttpClient("TestClient")
+            .AddStandardResilienceWithOptions(options);
+
+        var provider = services.BuildServiceProvider();
+
+        // Act
+        var retrievedHandlers = provider.GetRequiredService<ResilienceEventHandlers>();
+        retrievedHandlers.OnTimeout(TimeSpan.FromSeconds(10));
+
+        // Assert
+        Assert.NotEmpty(logger.LogEntries);
+        var timeoutLog = logger.LogEntries.First();
+        Assert.Equal(LogLevel.Warning, timeoutLog.Level);
+        Assert.Contains("timeout", timeoutLog.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Test: Hedging event handler can be instantiated and called with ResilienceOptions.
+    /// </summary>
+    [Fact]
+    public void AddStandardResilienceWithOptions_CanUseHedgingEventHandlers()
+    {
+        // Arrange
+        var logger = new MockLogger();
+        var eventHandlers = new ResilienceEventHandlers(logger);
+        var options = new ResilienceOptions
+        {
+            Hedging = new ResilienceOptions.HedgingStrategyOptions { Enabled = true, MaxHedgedAttempts = 2 }
+        };
+
+        var services = new ServiceCollection();
+        services.AddSingleton<ILogger>(logger);
+        services.AddSingleton<ResilienceEventHandlers>(eventHandlers);
+        services.AddHttpClient("TestClient")
+            .AddStandardResilienceWithOptions(options);
+
+        var provider = services.BuildServiceProvider();
+
+        // Act
+        var retrievedHandlers = provider.GetRequiredService<ResilienceEventHandlers>();
+        retrievedHandlers.OnHedging(1);
+
+        // Assert
+        Assert.NotEmpty(logger.LogEntries);
+        var hedgingLog = logger.LogEntries.First();
+        Assert.Equal(LogLevel.Information, hedgingLog.Level);
+        Assert.Contains("hedging", hedgingLog.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
