@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Wanderpool.Common.Infra.Telemetry;
 using Wanderpool.Common.Infra.HealthChecks;
+using Wanderpool.Common.Infra.Exceptions;
+using Wanderpool.Common.Infra.Logging;
 
 namespace Wanderpool.Common.Infra;
 
@@ -71,6 +74,40 @@ public static class WanderpoolInfrastructureExtensions
         // or WebApplication and should be configured separately in Program.cs
 
         return services;
+    }
+
+    /// <summary>
+    /// Configures all Wanderpool infrastructure middleware in the correct order.
+    /// Must be called after all service registrations.
+    /// </summary>
+    /// <param name="app">The WebApplication to configure.</param>
+    /// <returns>The WebApplication for chaining.</returns>
+    /// <remarks>
+    /// Middleware pipeline order (highest to lowest priority):
+    /// 1. Exception handling (catches all exceptions)
+    /// 2. Correlation ID context (enriches all logs with correlation ID)
+    /// 3. Request logging (logs all requests/responses)
+    /// 4. Health check endpoints (maps /health/* endpoints)
+    ///
+    /// All middleware are optional and respect WanderpoolOptions flags.
+    /// </remarks>
+    public static WebApplication UseWanderpoolInfrastructure(this WebApplication app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        // Add exception handling middleware
+        app.UseWanderpoolExceptionHandling();
+
+        // Add correlation ID middleware
+        app.UseWanderpoolCorrelationId();
+
+        // Add request logging middleware
+        app.UseWanderpoolRequestLogging();
+
+        // Map health check endpoints
+        app.MapWanderpoolHealthChecks();
+
+        return app;
     }
 
     /// <summary>
