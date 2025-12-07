@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -170,6 +171,44 @@ public static class MetricsExtensions
                     options.Endpoint = new Uri(metricsConfig.OtlpEndpoint);
                 });
             });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds custom HTTP client metrics instruments to the service collection.
+    /// Requires OpenTelemetry metrics to be configured first via AddWanderpoolMetrics().
+    /// </summary>
+    /// <param name="services">The service collection to add metrics to.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    /// <remarks>
+    /// This creates custom metric instruments for HTTP client tracking:
+    /// - wanderpool_http_client_requests_total: Counter for total requests by client, method, and status
+    /// - wanderpool_http_client_request_duration_seconds: Histogram for request duration by client, method, and status
+    ///
+    /// These instruments can be populated by a DelegatingHandler or other HTTP client instrumentation.
+    /// </remarks>
+    public static IServiceCollection AddWanderpoolHttpClientMetrics(
+        this IServiceCollection services)
+    {
+        var meter = new Meter("Wanderpool.HttpClient", "1.0.0");
+
+        var requestsCounter = meter.CreateCounter<long>(
+            "wanderpool_http_client_requests_total",
+            description: "Total HTTP client requests");
+
+        var requestDurationHistogram = meter.CreateHistogram<double>(
+            "wanderpool_http_client_request_duration_seconds",
+            unit: "s",
+            description: "HTTP client request duration in seconds");
+
+        var instruments = new HttpClientMetricsInstruments
+        {
+            RequestsCounter = requestsCounter,
+            RequestDurationHistogram = requestDurationHistogram
+        };
+
+        services.AddSingleton(instruments);
 
         return services;
     }

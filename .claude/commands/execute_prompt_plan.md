@@ -6,7 +6,7 @@ Execute a prompt plan to implement unfinished prompts in the project
    For each incomplete prompt:
    - Double check if it's trully unfinished
    - If you confirm that it's allready done skip it.
-   - Otherwise, implement as described
+   - Otherwise, set the status to implementing and mplement as described
    - Create a new git branch named as features/{step-id}
    - Make sure the tests pass, and the program builds
    - Make sure all the tests pass, and the solution builds
