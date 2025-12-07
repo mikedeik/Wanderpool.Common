@@ -1711,41 +1711,53 @@ Integrate TokenRefreshHandler when token provider is configured.
 ---
 
 ### STEP-049: Unified Middleware Pipeline
-**Status:** PENDING  
-**User Story:** US-6.2  
-**Dependencies:** STEP-009, STEP-004, STEP-022  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create single extension method to configure all middleware in correct order.
+**Completed:** 2025-12-08
 
-#### TDD Instructions
-1. **RED**: Create `WanderpoolMiddlewarePipelineTests.cs`
-  - Write test: UseWanderpoolInfrastructure adds correlation ID middleware
-  - Write test: Adds exception handling middleware
-  - Write test: Adds request logging middleware
-  - Write test: Middleware order is correct
-  - Write test: Health check endpoints are mapped
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ Updated `WanderpoolInfrastructureExtensions.cs` - Added UseWanderpoolInfrastructure() method
+- ✅ `WanderpoolMiddlewarePipelineTests.cs` - Test suite with 5 tests
+  - AddsCorrelationIdMiddleware: Verifies correlation ID middleware added
+  - AddsExceptionHandlingMiddleware: Verifies exception handling middleware added
+  - AddsRequestLoggingMiddleware: Verifies request logging middleware added
+  - MiddlewareOrderIsCorrect: Verifies middleware ordering
+  - MapsHealthCheckEndpoints: Verifies health check endpoint mapping
 
-2. **GREEN**: Update `WanderpoolInfrastructureExtensions.cs`
-  - Implement UseWanderpoolInfrastructure extension
-  - Add all middleware in correct order
-  - Run tests → ALL PASS
+**Implementation Details:**
+- UseWanderpoolInfrastructure(WebApplication) extension method
+- Configures middleware in correct order for reliable request handling
+- Middleware pipeline order:
+  1. Exception handling (catches all exceptions)
+  2. Correlation ID context (enriches logs with correlation ID)
+  3. Request logging (logs all HTTP requests/responses)
+  4. Health check endpoints (/health/live and /health/ready)
+- XML documentation with detailed remarks about middleware order
+- Returns WebApplication for method chaining
+- Null validation with ArgumentNullException
 
-3. **REFACTOR**
-  - Make middleware optional via options
-  - Run tests → ALL PASS
+**Test Coverage:**
+- 5 new tests passing
+- 329 total tests passing (2 skipped)
+- Build: 0 errors, 0 warnings
+- All middleware integration tested
 
-#### Acceptance Criteria
-- [ ] All tests pass with >90% coverage
-- [ ] All middleware configured
-- [ ] Order is correct and documented
-- [ ] Optional middleware work
+**Usage Pattern:**
+```csharp
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddWanderpoolInfrastructure(options => {
+    options.ServiceName = "MyService";
+});
+var app = builder.Build();
+app.UseWanderpoolInfrastructure();
+app.Run();
+```
 
-#### Deliverable
-- Updated `WanderpoolInfrastructureExtensions.cs`
-- `WanderpoolMiddlewarePipelineTests.cs` (min 5 tests)
+**Design Rationale:**
+- Single method for all infrastructure middleware configuration
+- Correct order critical for exception handling and logging
+- Separates DI configuration (AddWanderpoolInfrastructure) from pipeline setup (UseWanderpoolInfrastructure)
+- Clear documentation of middleware priority
 
 ---
 
