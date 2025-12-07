@@ -1006,42 +1006,42 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-031: Configurable Resilience Pipeline Builder
-**Status:** PENDING  
-**User Story:** US-4.2  
-**Dependencies:** STEP-030  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Refactor ResiliencePipelines to accept configuration.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `ConfigurableResiliencePipelineTests.cs`
-  - Write test: Pipeline created from ResilienceOptions
-  - Write test: Timeout value from configuration
-  - Write test: Retry count from configuration
-  - Write test: Circuit breaker settings from configuration
-  - Write test: Hedging settings from configuration
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ Updated `ResiliencePipelines.cs` - New AddStandardResilienceWithOptions() extension method
+- ✅ `ConfigurableResiliencePipelineTests.cs` - Test suite with 6 comprehensive tests
 
-2. **GREEN**: Update `src/Wanderpool.Common.Infra/Policies/ResiliencePipelines.cs`
-  - Accept ResilienceOptions parameter
-  - Build pipeline from options
-  - Maintain backward compatibility
-  - Run tests → ALL PASS
+**Implementation Details:**
+- AddStandardResilienceWithOptions(IHttpClientBuilder, ResilienceOptions) extension method
+- Accepts ResilienceOptions instance and configures Polly pipelines accordingly
+- Timeout configured from options.Timeout.TimeoutSeconds
+- Retry configured from options.Retry (respects UseExponentialBackoff flag)
+- Circuit breaker configured from options.CircuitBreaker (all parameters)
+- Hedging configured from options.Hedging (only if Enabled=true)
+- Maintains backward compatibility with existing AddStandardResilience() and AddStandardResilienceWithConfiguration() methods
+- Null parameter validation for robustness
 
-3. **REFACTOR**
-  - Extract builder methods per policy
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Handler registration with default ResilienceOptions
+- Timeout configuration application from options
+- Retry configuration application with customization
+- Circuit breaker configuration application with all parameters
+- Hedging configuration application with enabled flag
+- Independent policy configuration with mixed defaults and custom settings
+- All 6 tests passing
+- Build successful with 0 errors, 0 warnings
+- All 219 tests passing in full test suite
 
-#### Acceptance Criteria
-- [ ] All tests pass with >85% coverage
-- [ ] Configuration properly applied
-- [ ] Backward compatible with existing code
-- [ ] Each policy configurable independently
-
-#### Deliverable
-- Updated `ResiliencePipelines.cs`
-- `ConfigurableResiliencePipelineTests.cs` (min 5 tests)
+**Architecture Notes:**
+- Fully integrates ResilienceOptions from STEP-030
+- Respects Polly framework best practices
+- Conditional hedging only applies if explicitly enabled
+- ExponentialBackoff flag properly maps to DelayBackoffType enum
+- Ready for STEP-032 (Named Resilience Pipelines Registry)
+- Clean implementation without over-engineering
 
 ---
 
