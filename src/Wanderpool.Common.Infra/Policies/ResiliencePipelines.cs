@@ -35,6 +35,56 @@ public static class ResiliencePipelines
     }
 
     /// <summary>
+    /// Adds HTTP resilience policies with ResilienceOptions configuration.
+    /// </summary>
+    /// <param name="clientBuilder">The HTTP client builder.</param>
+    /// <param name="options">The resilience options instance.</param>
+    public static void AddStandardResilienceWithOptions(
+        this IHttpClientBuilder clientBuilder,
+        ResilienceOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(clientBuilder);
+        ArgumentNullException.ThrowIfNull(options);
+
+        clientBuilder.AddResilienceHandler("standard", builder =>
+        {
+            // Timeout per try
+            builder.AddTimeout(new HttpTimeoutStrategyOptions
+            {
+                Timeout = TimeSpan.FromSeconds(options.Timeout.TimeoutSeconds),
+            });
+
+            // Retry with exponential backoff + jitter
+            builder.AddRetry(new HttpRetryStrategyOptions
+            {
+                MaxRetryAttempts = options.Retry.MaxRetryAttempts,
+                BackoffType = options.Retry.UseExponentialBackoff ? DelayBackoffType.Exponential : DelayBackoffType.Linear,
+                Delay = TimeSpan.FromMilliseconds(options.Retry.InitialDelayMilliseconds),
+                UseJitter = true
+            });
+
+            // Circuit breaker
+            builder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+            {
+                BreakDuration = TimeSpan.FromSeconds(options.CircuitBreaker.BreakDurationSeconds),
+                SamplingDuration = TimeSpan.FromSeconds(options.CircuitBreaker.SamplingPeriodSeconds),
+                FailureRatio = options.CircuitBreaker.FailureRatio,
+                MinimumThroughput = options.CircuitBreaker.MinimumThroughput
+            });
+
+            // Hedging for better P99 latency (only if enabled)
+            if (options.Hedging.Enabled)
+            {
+                builder.AddHedging(new HttpHedgingStrategyOptions
+                {
+                    Delay = TimeSpan.FromMilliseconds(options.Hedging.DelayMilliseconds),
+                    MaxHedgedAttempts = options.Hedging.MaxHedgedAttempts
+                });
+            }
+        });
+    }
+
+    /// <summary>
     /// Internal implementation of resilience policies.
     /// </summary>
     private static void AddStandardResilienceInternal(
