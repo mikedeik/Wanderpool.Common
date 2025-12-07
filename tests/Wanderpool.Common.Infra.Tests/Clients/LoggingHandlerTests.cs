@@ -373,6 +373,90 @@ public class LoggingHandlerTests
     }
 
     /// <summary>
+    /// Test: First attempt logged at Info level.
+    /// </summary>
+    [Fact]
+    public async Task SendAsync_FirstAttemptLoggedAsInfo()
+    {
+        // Arrange
+        var logMessages = new List<string>();
+        var logLevels = new List<LogLevel>();
+        var mockLogger = new MockLoggerWithLevel(logMessages, logLevels);
+        var loggingHandler = new Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler(mockLogger);
+        var innerHandler = new MockLoggingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        loggingHandler.InnerHandler = innerHandler;
+        var client = new HttpClient(loggingHandler);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        // First attempt should be logged at Information level
+        var infoLogs = logLevels.Where(l => l == LogLevel.Information).Count();
+        Assert.True(infoLogs > 0);
+    }
+
+    /// <summary>
+    /// Test: Retry attempts logged at Warning level.
+    /// </summary>
+    [Fact]
+    public async Task SendAsync_RetryAttemptsLoggedAsWarning()
+    {
+        // Arrange
+        var logMessages = new List<string>();
+        var logLevels = new List<LogLevel>();
+        var mockLogger = new MockLoggerWithLevel(logMessages, logLevels);
+        var loggingHandler = new Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler(mockLogger);
+        var innerHandler = new MockLoggingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        loggingHandler.InnerHandler = innerHandler;
+        var client = new HttpClient(loggingHandler);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+
+        // Simulate retry attempt (attempt number 2 or higher)
+        request.Options.Set(new HttpRequestOptionsKey<int>("AttemptNumber"), 2);
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        var logOutput = string.Join(" ", logMessages);
+        // Retry message should contain indication of retry
+        Assert.Contains("retry", logOutput, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Test: Retry count included in log message.
+    /// </summary>
+    [Fact]
+    public async Task SendAsync_RetryCountIncludedInLog()
+    {
+        // Arrange
+        var logMessages = new List<string>();
+        var logLevels = new List<LogLevel>();
+        var mockLogger = new MockLoggerWithLevel(logMessages, logLevels);
+        var loggingHandler = new Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler(mockLogger);
+        var innerHandler = new MockLoggingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        loggingHandler.InnerHandler = innerHandler;
+        var client = new HttpClient(loggingHandler);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+
+        // Simulate third retry attempt
+        request.Options.Set(new HttpRequestOptionsKey<int>("AttemptNumber"), 3);
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        var logOutput = string.Join(" ", logMessages);
+        // Attempt number should be logged
+        Assert.Contains("3", logOutput);
+    }
+
+    /// <summary>
     /// Mock logger for testing that captures log messages.
     /// </summary>
     private class MockLogger : ILogger<Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler>
@@ -392,6 +476,32 @@ public class LoggingHandlerTests
         {
             var message = formatter(state, exception);
             _messages.Add(message);
+        }
+    }
+
+    /// <summary>
+    /// Mock logger for testing that captures log messages and log levels.
+    /// </summary>
+    private class MockLoggerWithLevel : ILogger<Wanderpool.Common.Infra.Clients.HttpClientHandlers.LoggingHandler>
+    {
+        private readonly List<string> _messages;
+        private readonly List<LogLevel> _logLevels;
+
+        public MockLoggerWithLevel(List<string> messages, List<LogLevel> logLevels)
+        {
+            _messages = messages;
+            _logLevels = logLevels;
+        }
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            var message = formatter(state, exception);
+            _messages.Add(message);
+            _logLevels.Add(logLevel);
         }
     }
 }

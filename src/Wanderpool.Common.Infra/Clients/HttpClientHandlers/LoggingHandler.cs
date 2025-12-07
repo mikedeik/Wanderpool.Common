@@ -89,12 +89,26 @@ public class LoggingHandler : DelegatingHandler
     {
         var redactedUri = RedactSensitiveQueryParams(request.RequestUri);
         var clientName = GetClientName(request);
+        var attemptNumber = GetAttemptNumber(request);
+        var isRetry = attemptNumber > 1;
 
-        _logger.LogInformation(
-            "Outbound HTTP {HttpMethod} request to {RequestUri} from client {ClientName}",
-            request.Method,
-            redactedUri,
-            clientName);
+        if (isRetry)
+        {
+            _logger.LogWarning(
+                "Outbound HTTP {HttpMethod} request to {RequestUri} from client {ClientName} (retry attempt {AttemptNumber})",
+                request.Method,
+                redactedUri,
+                clientName,
+                attemptNumber);
+        }
+        else
+        {
+            _logger.LogInformation(
+                "Outbound HTTP {HttpMethod} request to {RequestUri} from client {ClientName}",
+                request.Method,
+                redactedUri,
+                clientName);
+        }
     }
 
     /// <summary>
@@ -208,5 +222,23 @@ public class LoggingHandler : DelegatingHandler
 
         // Fallback to "Unknown"
         return "Unknown";
+    }
+
+    /// <summary>
+    /// Extracts the attempt number from HttpRequestMessage options.
+    /// Returns 1 if no attempt number is set (first attempt).
+    /// </summary>
+    /// <param name="request">The HTTP request message.</param>
+    /// <returns>The attempt number (1 for first attempt, 2+ for retries).</returns>
+    private static int GetAttemptNumber(HttpRequestMessage request)
+    {
+        // Try to get the attempt number from request options
+        if (request.Options.TryGetValue(new HttpRequestOptionsKey<int>("AttemptNumber"), out var attemptNumber) && attemptNumber > 0)
+        {
+            return attemptNumber;
+        }
+
+        // Fallback to 1 (first attempt)
+        return 1;
     }
 }
