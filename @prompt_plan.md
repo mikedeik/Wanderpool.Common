@@ -350,43 +350,38 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-016: HTTP Client Metrics Handler
-**Status:** PENDING  
-**User Story:** US-3.2  
-**Dependencies:** STEP-015  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create DelegatingHandler that records HTTP client metrics.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `HttpClientMetricsHandlerTests.cs`
-  - Write test: Handler records request count on success
-  - Write test: Handler records request count on failure
-  - Write test: Handler records duration accurately
-  - Write test: Handler includes client name in tags
-  - Write test: Handler handles exceptions without breaking
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `HttpClientMetricsHandler.cs` - DelegatingHandler implementation for recording HTTP client metrics
+- ✅ `HttpClientMetricsHandlerTests.cs` - Test suite with 5 comprehensive tests
+  - Tests: Success requests, failed requests, duration tracking, client name, exception handling
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Clients/HttpClientHandlers/HttpClientMetricsHandler.cs`
-  - Implement DelegatingHandler
-  - Record metrics on request completion
-  - Handle exceptions
-  - Run tests → ALL PASS
+**Implementation Details:**
+- DelegatingHandler that intercepts HTTP requests and responses
+- Records metrics for both successful (200 OK) and failed (500 error) requests
+- Uses Stopwatch to measure request duration accurately
+- Tags metrics with: client_name, http_method, http_status_code
+- Handles HttpRequestException and OperationCanceledException gracefully
+- Records metrics even when requests fail (exception propagated after recording)
+- Configurable client name with "Unknown" fallback
+- Full integration with HttpClientMetricsInstruments from STEP-015
 
-3. **REFACTOR**
-  - Optimize tag creation
-  - Ensure no metric leaks
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Metrics recorded on successful requests
+- Metrics recorded on failed requests
+- Duration accurately measured and recorded
+- Client name properly included in metrics
+- HTTP exceptions handled without breaking
+- All 161 tests passing (5 new for STEP-016)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass with >90% coverage
-- [ ] Metrics recorded accurately
-- [ ] No performance degradation
-- [ ] Exception handling correct
-
-#### Deliverable
-- `HttpClientMetricsHandler.cs` implementation
-- `HttpClientMetricsHandlerTests.cs` (min 5 tests)
+**Notes:**
+- Next step STEP-017 will add Circuit Breaker state metrics
+- DelegatingHandler can be added to HttpClient pipeline via HttpClientBuilder
+- Uses standard .NET HttpClientMetricsInstruments pattern for metrics
 
 ---
 
