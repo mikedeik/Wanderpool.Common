@@ -1310,44 +1310,39 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-038: FluentValidation Endpoint Filter - Core
-**Status:** PENDING  
-**User Story:** US-5.2  
-**Dependencies:** None  
-**Estimated Effort:** 4 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create endpoint filter that automatically validates request objects.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Api/ValidationFilterTests.cs`
-  - Write test: Valid request passes through
-  - Write test: Invalid request returns 400
-  - Write test: Validation errors included in response
-  - Write test: Multiple validation errors collected
-  - Write test: Filter only runs when validator exists
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `ValidationFilter.cs` - IEndpointFilter implementation for automatic request validation
+- ✅ `ValidationFilterTests.cs` - Test suite with 6 tests
+- ✅ FluentValidation packages added (11.9.0)
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Api/ValidationFilter.cs`
-  - Implement IEndpointFilter
-  - Resolve validator from DI
-  - Validate request object
-  - Return validation errors if failed
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Implements IEndpointFilter to intercept endpoint calls
+- Resolves IValidator<T> from dependency injection
+- Validates incoming request objects using FluentValidation
+- Returns 400 Bad Request with OperationResultError if validation fails
+- Skips validation if no validator is registered
+- Continues to next filter if request is valid
+- Includes TraceId in error responses
 
-3. **REFACTOR**
-  - Optimize validator resolution
-  - Run tests → ALL PASS
+**Key Features:**
+- Automatic validation without additional endpoint code
+- Reuses ApiResponse.BadRequest for consistent error format
+- Generic implementation works with any request type
+- Zero overhead when no validator is registered
 
-#### Acceptance Criteria
-- [ ] All tests pass with >90% coverage
-- [ ] Validation automatic for requests with validators
-- [ ] Error format consistent with ValidationException
-- [ ] No performance impact when no validator
+**Test Coverage:**
+- Valid request passes validation ✅
+- Invalid request fails with 400 response ✅
+- Multiple validation errors are collected ✅
+- Validator is resolved from dependency injection ✅
+- Filter skips when no validator registered ✅
+- Request object extraction from context ✅
 
-#### Deliverable
-- `ValidationFilter.cs`
-- `ValidationFilterTests.cs` (min 5 tests)
-- FluentValidation package added
+**Test Results:** 289 passing (6 new tests)
 
 ---
 
