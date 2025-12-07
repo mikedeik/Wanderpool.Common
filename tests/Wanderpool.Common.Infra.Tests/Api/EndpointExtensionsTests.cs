@@ -78,4 +78,46 @@ public class EndpointExtensionsTests
 
         Assert.NotEmpty(mapVersionedApiMethods);
     }
+
+    /// <summary>
+    /// Test: WithCommonFilters extension method exists.
+    /// </summary>
+    [Fact]
+    public void WithCommonFilters_ExtensionMethodExists()
+    {
+        // Assert - the extension method should exist
+        var withCommonFiltersMethods = typeof(EndpointExtensions).GetMethods()
+            .Where(m => m.Name == "WithCommonFilters")
+            .ToList();
+
+        Assert.NotEmpty(withCommonFiltersMethods);
+    }
+
+    /// <summary>
+    /// Test: WithAuthentication extension method exists.
+    /// </summary>
+    [Fact]
+    public void WithAuthentication_ExtensionMethodExists()
+    {
+        // Assert - the extension method should exist
+        var withAuthMethods = typeof(EndpointExtensions).GetMethods()
+            .Where(m => m.Name == "WithAuthentication")
+            .ToList();
+
+        Assert.NotEmpty(withAuthMethods);
+    }
+
+    /// <summary>
+    /// Test: WithTags extension method exists.
+    /// </summary>
+    [Fact]
+    public void WithTags_ExtensionMethodExists()
+    {
+        // Assert - the extension method should exist
+        var withTagsMethods = typeof(EndpointExtensions).GetMethods()
+            .Where(m => m.Name == "WithTags")
+            .ToList();
+
+        Assert.NotEmpty(withTagsMethods);
+    }
 }
