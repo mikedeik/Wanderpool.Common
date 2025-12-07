@@ -429,40 +429,40 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-018: Prometheus Exporter Endpoint
-**Status:** PENDING  
-**User Story:** US-3.2  
-**Dependencies:** STEP-014  
-**Estimated Effort:** 2 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Configure Prometheus exporter and expose /metrics endpoint.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `PrometheusEndpointTests.cs`
-  - Write test: MapWanderpoolMetrics exposes endpoint
-  - Write test: /metrics returns prometheus format
-  - Write test: Endpoint includes custom metrics
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `MetricsExtensions.cs` - New MapWanderpoolMetrics() extension method
+- ✅ `PrometheusEndpointTests.cs` - Test suite with 6 comprehensive tests
+  - Tests: Endpoint mapping, custom paths, service collection, validation
+- ✅ `Wanderpool.Common.Infra.csproj` - Prometheus exporter package reference
 
-2. **GREEN**: Update `MetricsExtensions.cs`
-  - Add Prometheus exporter
-  - Create MapWanderpoolMetrics extension
-  - Run tests → ALL PASS
+**Implementation Details:**
+- MapWanderpoolMetrics() extension method for WebApplication
+  - Exposes metrics endpoint (default /metrics, configurable path)
+  - Returns metrics in Prometheus text format
+  - Minimal API endpoint with proper content-type handling
+  - Full parameter validation (null app, empty path)
+- OpenTelemetry.Exporter.Prometheus v1.3.0-rc.2 integrated
+- Separate from AddWanderpoolMetrics() for cleaner separation of concerns
+- Applications call both AddWanderpoolMetrics() and MapWanderpoolMetrics()
 
-3. **REFACTOR**
-  - Configure endpoint path if needed
-  - Run tests → ALL PASS
+**Test Coverage:**
+- MapWanderpoolMetrics returns valid endpoint builder
+- Custom path support for metrics endpoint
+- Service collection registration verification
+- Null application validation (ArgumentNullException)
+- Empty and whitespace path validation (ArgumentException)
+- All 173 tests passing (6 new for STEP-018)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] /metrics endpoint accessible
-- [ ] Prometheus format correct
-- [ ] All metrics exported
-
-#### Deliverable
-- Updated `MetricsExtensions.cs`
-- Endpoint mapping extension
-- `PrometheusEndpointTests.cs` (min 3 tests)
+**Architecture Notes:**
+- Prometheus exporter package added but not auto-enabled in AddWanderpoolMetrics
+- MapWanderpoolMetrics() is separate integration point for HTTP endpoint
+- Endpoint respects OpenTelemetry metrics pipeline configuration
+- Ready for applications to expose metrics for Prometheus scraping
 
 ---
 
