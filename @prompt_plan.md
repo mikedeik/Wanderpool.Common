@@ -644,41 +644,49 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-023: Request Logging - Header Redaction
-**Status:** PENDING  
-**User Story:** US-1.2  
-**Dependencies:** STEP-022  
-**Estimated Effort:** 2 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Implement sensitive header redaction in request logs.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Extend `RequestLoggingMiddlewareTests.cs`
-  - Write test: Authorization header is redacted
-  - Write test: X-Api-Key header is redacted
-  - Write test: Cookie header is redacted
-  - Write test: Non-sensitive headers are logged
-  - Write test: Redaction list is configurable
-  - Run tests → NEW TESTS FAIL
+**Deliverables:**
+- ✅ Updated `RequestLoggingMiddleware.cs` - Added GetRedactedHeadersInfo() method and header logging
+- ✅ Extended `RequestLoggingMiddlewareTests.cs` - 5 new tests for header redaction
 
-2. **GREEN**: Update `RequestLoggingMiddleware.cs`
-  - Implement header redaction logic
-  - Use SensitiveHeaders list from options
-  - Run tests → ALL PASS
+**Implementation Details:**
+- GetRedactedHeadersInfo() method handles header redaction logic
+- Case-insensitive header matching using StringComparer.OrdinalIgnoreCase
+- Sensitive headers from RequestLoggingOptions.SensitiveHeaders are redacted as "[REDACTED]"
+- Non-sensitive headers are logged in full for debugging purposes
+- HashSet with O(1) lookup for performance
+- Headers included in LogRequest() entries for complete request logging
 
-3. **REFACTOR**
-  - Optimize header checking (case-insensitive)
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Middleware_CanRedactAuthorizationHeader() - Verifies Authorization header redaction
+- Middleware_CanRedactXApiKeyHeader() - Verifies X-Api-Key header redaction
+- Middleware_CanRedactCookieHeader() - Verifies Cookie header redaction
+- Middleware_PreservesNonSensitiveHeaders() - Verifies non-sensitive headers preserved
+- Middleware_AllowsConfigurableRedactionList() - Verifies configurable redaction list
+- All 200 existing tests still passing (5 new tests added)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Sensitive headers properly redacted
-- [ ] Configurable redaction list
-- [ ] Case-insensitive matching
+**Security Features:**
+- Sensitive headers from pre-configured list are redacted
+- List is extensible via RequestLoggingOptions.SensitiveHeaders
+- Case-insensitive matching prevents case-variation bypasses
+- Default sensitive headers: Authorization, X-Api-Key, X-Access-Token, Cookie, Set-Cookie, X-CSRF-Token, X-Auth-Token, Authorization-Token
 
-#### Deliverable
-- Updated `RequestLoggingMiddleware.cs`
-- 5 additional tests
+**Performance Characteristics:**
+- HashSet lookup is O(1) for each header
+- Case-insensitive comparison done once per header
+- Redaction happens inline during logging
+
+**Architecture Notes:**
+- GetRedactedHeadersInfo() is private utility method
+- Integrated into LogRequest() to include headers in log entries
+- Compatible with RequestLoggingOptions configuration
+- Ready for STEP-024 (Request Logging - Body Logging)
+
+**Next Step:** STEP-024 (Request Logging - Body Logging)
 
 ---
 
