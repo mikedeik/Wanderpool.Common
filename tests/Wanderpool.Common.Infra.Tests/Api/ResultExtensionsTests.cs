@@ -158,4 +158,93 @@ public class ResultExtensionsTests
         Assert.NotNull(iResult);
         Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<ApiResponseEnvelope<string>>>(iResult);
     }
+
+    /// <summary>
+    /// Test: ApiResponse.Ok() returns IResult with success response
+    /// </summary>
+    [Fact]
+    public void ApiResponse_Ok_ReturnsSuccess()
+    {
+        // Arrange
+        var httpContext = CreateMockHttpContext();
+        var data = "test data";
+
+        // Act
+        var result = ApiResponse.Ok(data, httpContext);
+
+        // Assert - verify it returns IResult
+        Assert.NotNull(result);
+        Assert.IsAssignableFrom<IResult>(result);
+    }
+
+    /// <summary>
+    /// Test: ApiResponse.Created() returns IResult with created response
+    /// </summary>
+    [Fact]
+    public void ApiResponse_Created_ReturnsCreated()
+    {
+        // Arrange
+        var httpContext = CreateMockHttpContext();
+        var data = "new resource";
+        var location = "/api/resources/123";
+
+        // Act
+        var result = ApiResponse.Created(data, location, httpContext);
+
+        // Assert - verify it returns IResult
+        Assert.NotNull(result);
+        Assert.IsAssignableFrom<IResult>(result);
+    }
+
+    /// <summary>
+    /// Test: ApiResponse.NoContent() returns IResult with no content
+    /// </summary>
+    [Fact]
+    public void ApiResponse_NoContent_ReturnsNoContent()
+    {
+        // Arrange - No arrangement needed for NoContent
+
+        // Act
+        var result = ApiResponse.NoContent();
+
+        // Assert - verify it returns IResult
+        Assert.NotNull(result);
+        Assert.IsAssignableFrom<IResult>(result);
+    }
+
+    /// <summary>
+    /// Test: ApiResponse.BadRequest() returns IResult with error
+    /// </summary>
+    [Fact]
+    public void ApiResponse_BadRequest_ReturnsError()
+    {
+        // Arrange
+        var httpContext = CreateMockHttpContext();
+        var error = OperationResultError.Error("VALIDATION_ERROR", "Invalid input");
+
+        // Act
+        var result = ApiResponse.BadRequest(error, httpContext);
+
+        // Assert - verify it returns IResult
+        Assert.NotNull(result);
+        Assert.IsAssignableFrom<IResult>(result);
+    }
+
+    /// <summary>
+    /// Test: ApiResponse.NotFound() returns IResult with error
+    /// </summary>
+    [Fact]
+    public void ApiResponse_NotFound_ReturnsError()
+    {
+        // Arrange
+        var httpContext = CreateMockHttpContext();
+        var error = OperationResultError.Error("NOT_FOUND", "Resource not found");
+
+        // Act
+        var result = ApiResponse.NotFound(error, httpContext);
+
+        // Assert - verify it returns IResult
+        Assert.NotNull(result);
+        Assert.IsAssignableFrom<IResult>(result);
+    }
 }
