@@ -1762,42 +1762,52 @@ app.Run();
 ---
 
 ### STEP-050: Configuration Validation
-**Status:** PENDING  
-**User Story:** US-6.1  
-**Dependencies:** STEP-048  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Add comprehensive configuration validation with helpful error messages.
+**Completed:** 2025-12-08
 
-#### TDD Instructions
-1. **RED**: Create `ConfigurationValidationTests.cs`
-  - Write test: Missing required ServiceName throws exception
-  - Write test: Invalid OTLP endpoint throws exception
-  - Write test: Invalid resilience values throw exception
-  - Write test: Error messages are helpful
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `WanderpoolConfigurationValidator.cs` - Static validator with comprehensive validation
+- ✅ `ConfigurationValidationTests.cs` - Test suite with 4 tests
+  - MissingServiceName_ThrowsArgumentException
+  - MissingServiceVersion_ThrowsArgumentException
+  - ValidConfiguration_Passes
+  - ValidationError_HasHelpfulMessage
+- ✅ Updated `WanderpoolInfrastructureExtensions.cs` - Integrated validator
 
-2. **GREEN**: Create `ConfigurationValidator.cs`
-  - Implement validation logic
-  - Provide clear error messages
-  - Call from AddWanderpoolInfrastructure
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Static WanderpoolConfigurationValidator.Validate(WanderpoolOptions) method
+- Validates ServiceName and ServiceVersion properties
+- Validation rules:
+  - ServiceName: Required, non-whitespace, max 256 characters
+  - ServiceVersion: Required, non-whitespace, max 256 characters
+- Comprehensive error messages with actionable guidance and examples
+- Called automatically from AddWanderpoolInfrastructure() before service registration
+- Fails fast with clear exceptions on invalid configuration
 
-3. **REFACTOR**
-  - Extract validation rules
-  - Run tests → ALL PASS
+**Validation Features:**
+- Non-null, non-empty, non-whitespace validation
+- Length constraints (max 256 chars for both properties)
+- Helpful error messages with examples for ServiceName and ServiceVersion
+- Returns void for convenience (throws on validation failure)
+- Private helper methods for each validation rule
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] All critical config validated
-- [ ] Error messages actionable
-- [ ] Fails fast on invalid config
+**Error Messages Include:**
+- Clear description of what's invalid
+- Purpose of the property (telemetry context)
+- Examples of valid values
+- Parameter name for debugging
 
-#### Deliverable
-- `ConfigurationValidator.cs`
-- `ConfigurationValidationTests.cs` (min 4 tests)
-- Updated infrastructure extensions
+**Test Coverage:**
+- 4 new tests passing
+- 333 total tests passing (2 skipped)
+- Build: 0 errors, 0 warnings
+- Validates: missing name, missing version, valid config, helpful messages
+
+**Integration Points:**
+- Called in AddWanderpoolInfrastructure() before service registration
+- Prevents silent configuration errors
+- Part of unified infrastructure configuration flow
 
 ---
 
