@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace Wanderpool.Common.Infra.Policies;
 
 /// <summary>
@@ -6,8 +8,7 @@ namespace Wanderpool.Common.Infra.Policies;
 /// </summary>
 public class ResiliencePipelineRegistry
 {
-    private readonly Dictionary<string, ResilienceOptions> _pipelines = new(StringComparer.OrdinalIgnoreCase);
-    private readonly object _lockObject = new();
+    private readonly ConcurrentDictionary<string, ResilienceOptions> _pipelines = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Registers a named resilience pipeline with the given configuration.
@@ -21,10 +22,8 @@ public class ResiliencePipelineRegistry
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(options);
 
-        lock (_lockObject)
-        {
-            _pipelines[name] = options;
-        }
+        _pipelines[name] = options;
+        
     }
 
     /// <summary>
@@ -36,14 +35,11 @@ public class ResiliencePipelineRegistry
     public ResilienceOptions Get(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
-
-        lock (_lockObject)
-        {
+        
             if (_pipelines.TryGetValue(name, out var options))
             {
                 return options;
             }
-        }
 
         throw new KeyNotFoundException($"Resilience pipeline '{name}' is not registered. Available pipelines: {string.Join(", ", GetRegisteredNames())}");
     }
@@ -57,11 +53,8 @@ public class ResiliencePipelineRegistry
     public bool TryGet(string name, out ResilienceOptions? options)
     {
         ArgumentNullException.ThrowIfNull(name);
-
-        lock (_lockObject)
-        {
-            return _pipelines.TryGetValue(name, out options);
-        }
+        return _pipelines.TryGetValue(name, out options);
+        
     }
 
     /// <summary>
@@ -70,10 +63,9 @@ public class ResiliencePipelineRegistry
     /// <returns>A collection of registered pipeline names.</returns>
     public IReadOnlyCollection<string> GetRegisteredNames()
     {
-        lock (_lockObject)
-        {
-            return _pipelines.Keys.ToList().AsReadOnly();
-        }
+
+        return _pipelines.Keys.ToList().AsReadOnly();
+        
     }
 
     /// <summary>
@@ -85,10 +77,8 @@ public class ResiliencePipelineRegistry
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        lock (_lockObject)
-        {
-            return _pipelines.ContainsKey(name);
-        }
+        return _pipelines.ContainsKey(name);
+        
     }
 
     /// <summary>
@@ -100,10 +90,9 @@ public class ResiliencePipelineRegistry
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        lock (_lockObject)
-        {
-            return _pipelines.Remove(name);
-        }
+
+        return _pipelines.Remove(name, out var _);
+        
     }
 
     /// <summary>
@@ -111,10 +100,9 @@ public class ResiliencePipelineRegistry
     /// </summary>
     public void Clear()
     {
-        lock (_lockObject)
-        {
-            _pipelines.Clear();
-        }
+
+        _pipelines.Clear();
+        
     }
 
     /// <summary>
@@ -124,10 +112,7 @@ public class ResiliencePipelineRegistry
     {
         get
         {
-            lock (_lockObject)
-            {
-                return _pipelines.Count;
-            }
+            return _pipelines.Count;
         }
     }
 }
