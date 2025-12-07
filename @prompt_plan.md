@@ -1046,43 +1046,50 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-032: Named Resilience Pipelines Registry
-**Status:** PENDING  
-**User Story:** US-4.1  
-**Dependencies:** STEP-031  
-**Estimated Effort:** 4 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create registry for named resilience pipelines with different configurations.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `NamedResiliencePipelinesTests.cs`
-  - Write test: Pipeline can be registered by name
-  - Write test: Pipeline can be retrieved by name
-  - Write test: Multiple named pipelines can coexist
-  - Write test: Unknown pipeline name throws exception
-  - Write test: Pipelines are singleton per name
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `ResiliencePipelineRegistry.cs` - Thread-safe registry implementation
+- ✅ `NamedResiliencePipelinesTests.cs` - Test suite with 10 comprehensive tests
 
-2. **GREEN**: Create `ResiliencePipelineRegistry.cs`
-  - Implement dictionary-based registry
-  - Register named pipelines
-  - Retrieve by name
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Thread-safe dictionary-based registry using lock synchronization
+- Case-insensitive pipeline name matching (StringComparer.OrdinalIgnoreCase)
+- Register(name, options) - Add or overwrite pipeline registration
+- Get(name) - Retrieve pipeline, throws KeyNotFoundException with helpful message
+- TryGet(name, out options) - Safe retrieval without throwing
+- Contains(name) - Check if pipeline is registered
+- Unregister(name) - Remove a pipeline (returns success/failure)
+- Clear() - Remove all pipelines
+- GetRegisteredNames() - List all registered pipeline names
+- Count property - Get number of registered pipelines
+- Null parameter validation (ArgumentNullException)
+- Duplicate registration overwrites previous definition
+- Pipeline references are shared (singleton behavior per name)
 
-3. **REFACTOR**
-  - Add thread-safe registration
-  - Add validation
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Single pipeline registration and retrieval
+- Multiple named pipelines with different timeout configurations
+- KeyNotFoundException for unregistered names with helpful error message
+- Reference identity (same object returned on multiple retrievals)
+- ArgumentNullException for null name and null options
+- Duplicate name registration overwrites previous registration
+- TryGet returns false and null for missing pipelines
+- TryGet returns true and options for registered pipelines
+- All 10 tests passing
+- Build successful with 0 errors, 0 warnings
+- All 239 tests passing in full test suite
 
-#### Acceptance Criteria
-- [ ] All tests pass with >90% coverage
-- [ ] Thread-safe registration and retrieval
-- [ ] Clear error messages for missing pipelines
-- [ ] Pipelines are reusable
-
-#### Deliverable
-- `ResiliencePipelineRegistry.cs`
-- `NamedResiliencePipelinesTests.cs` (min 5 tests)
+**Architecture Notes:**
+- Thread-safe with lock synchronization for all operations
+- Dictionary provides O(1) lookups for pipeline retrieval
+- Case-insensitive matching improves usability (e.g., "fastapi" == "FastAPI")
+- Error messages list available pipelines for better debugging
+- Supports both eager registration and safe optional retrieval patterns
+- Ready for STEP-033 (Named Pipeline Configuration from appsettings)
+- Clean, maintainable implementation without over-engineering
 
 ---
 
