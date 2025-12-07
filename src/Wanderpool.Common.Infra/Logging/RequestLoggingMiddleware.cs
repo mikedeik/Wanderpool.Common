@@ -40,7 +40,7 @@ public class RequestLoggingMiddleware
             LogRequest(context);
 
             // Replace response body stream to capture response
-            using var memoryStream = new MemoryStream();
+            var memoryStream = new MemoryStream();
             context.Response.Body = memoryStream;
 
             try
@@ -56,8 +56,12 @@ public class RequestLoggingMiddleware
                 await LogResponse(context, memoryStream, stopwatch.ElapsedMilliseconds);
 
                 // Copy the response back to the original stream
-                memoryStream.Position = 0;
-                await memoryStream.CopyToAsync(originalBodyStream);
+                if (memoryStream.CanSeek)
+                {
+                    memoryStream.Position = 0;
+                    await memoryStream.CopyToAsync(originalBodyStream);
+                }
+                memoryStream.Dispose();
             }
         }
         finally
@@ -132,16 +136,24 @@ public class RequestLoggingMiddleware
 
         // Get response body if logging is enabled
         string responseContent = string.Empty;
-        if (options.EnableResponseBodyLogging && responseBody.Length > 0)
+        if (options.EnableResponseBodyLogging && responseBody.CanSeek && responseBody.Length > 0)
         {
-            responseBody.Position = 0;
-            using var reader = new StreamReader(responseBody);
-            responseContent = await reader.ReadToEndAsync();
-
-            // Truncate if needed
-            if (responseContent.Length > options.MaxBodySizeLogged)
+            try
             {
-                responseContent = responseContent.Substring(0, options.MaxBodySizeLogged) + "... [TRUNCATED]";
+                responseBody.Position = 0;
+                using var reader = new StreamReader(responseBody, leaveOpen: true);
+                responseContent = await reader.ReadToEndAsync();
+
+                // Truncate if needed
+                if (responseContent.Length > options.MaxBodySizeLogged)
+                {
+                    responseContent = responseContent.Substring(0, options.MaxBodySizeLogged) + "... [TRUNCATED]";
+                }
+            }
+            catch
+            {
+                // If we can't read the response body, just continue without it
+                responseContent = string.Empty;
             }
         }
 
