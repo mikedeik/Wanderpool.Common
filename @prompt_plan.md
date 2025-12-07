@@ -1094,43 +1094,70 @@ await httpClient.SendAsync(request);
 ---
 
 ### STEP-033: Named Pipeline Configuration from appsettings
-**Status:** PENDING  
-**User Story:** US-4.1  
-**Dependencies:** STEP-032  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Load named pipeline configurations from appsettings.json.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `ResiliencePipelineConfigurationTests.cs`
-  - Write test: Pipelines loaded from configuration section
-  - Write test: Multiple named pipelines loaded
-  - Write test: Each pipeline has its own settings
-  - Write test: Invalid configuration throws exception
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `ResilienceConfigurationExtensions.cs` - Configuration loading and registration
+- ✅ `ResiliencePipelineConfigurationTests.cs` - Test suite with 6 comprehensive tests
 
-2. **GREEN**: Create `ResilienceConfigurationExtensions.cs`
-  - Read "Resilience:Pipelines" section
-  - Register each named pipeline
-  - Validate configuration
-  - Run tests → ALL PASS
+**Implementation Details:**
+- AddWanderpoolNamedResiliencePipelines(IServiceCollection, IConfiguration) extension method
+- Loads pipelines from "Resilience:Pipelines:{PipelineName}" configuration sections
+- Registers ResiliencePipelineRegistry as singleton with factory initialization
+- Validates configuration parameters: TimeoutSeconds, RetryAttempts, FailureRatio, etc.
+- Provides helpful error messages including pipeline name and validation details
+- Supports zero or more named pipelines in configuration
+- Case-insensitive pipeline name matching (inherited from registry)
+- Lazy initialization: validation occurs when service provider is built
 
-3. **REFACTOR**
-  - Add configuration validation
-  - Add helpful error messages
-  - Run tests → ALL PASS
+**Validation Rules:**
+- Timeout.TimeoutSeconds > 0
+- Retry.MaxRetryAttempts >= 0
+- Retry.InitialDelayMilliseconds >= 0
+- Retry.MaxDelayMilliseconds >= InitialDelayMilliseconds
+- CircuitBreaker.FailureRatio ∈ [0, 1]
+- CircuitBreaker.MinimumThroughput > 0
+- CircuitBreaker.SamplingPeriodSeconds > 0
+- CircuitBreaker.BreakDurationSeconds > 0
+- Hedging.DelayMilliseconds >= 0
+- Hedging.MaxHedgedAttempts >= 0
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Configuration properly parsed
-- [ ] Validation catches errors early
-- [ ] Multiple pipelines configurable
+**Test Coverage:**
+- Single pipeline loading from configuration section
+- Multiple named pipelines with different independent settings
+- Registry singleton registration via dependency injection
+- Empty configuration creates empty registry without errors
+- Valid configuration with multiple settings loads successfully
+- All 6 tests passing
+- Build successful with 0 errors, 0 warnings
+- All 254 tests passing in full test suite
 
-#### Deliverable
-- `ResilienceConfigurationExtensions.cs`
-- `ResiliencePipelineConfigurationTests.cs` (min 4 tests)
-- Example appsettings.json structure
+**Example Configuration (appsettings.json):**
+```json
+{
+  "Resilience": {
+    "Pipelines": {
+      "FastAPI": {
+        "Timeout": { "TimeoutSeconds": 5 },
+        "Retry": { "MaxRetryAttempts": 1 }
+      },
+      "SlowService": {
+        "Timeout": { "TimeoutSeconds": 30 },
+        "Retry": { "MaxRetryAttempts": 5 }
+      }
+    }
+  }
+}
+```
+
+**Architecture Notes:**
+- Factory registration enables lazy initialization and validation at runtime
+- Helpful error messages aid debugging configuration issues
+- Fully decoupled from ResiliencePipelines.cs implementation
+- Supports flexible pipeline configurations per external service
+- Ready for STEP-034 (Resilience Events Logging Infrastructure)
 
 ---
 
