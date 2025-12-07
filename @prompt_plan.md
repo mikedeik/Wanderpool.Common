@@ -735,38 +735,41 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-025: Request Logging Extension Method
-**Status:** PENDING  
-**User Story:** US-1.2  
-**Dependencies:** STEP-024  
-**Estimated Effort:** 1 hour
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create fluent extension method for middleware registration.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `RequestLoggingExtensionsTests.cs`
-  - Write test: UseWanderpoolRequestLogging registers middleware
-  - Write test: Options can be configured via lambda
-  - Write test: Extension is chainable
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `LoggingExtensions.cs` - Enhanced with UseWanderpoolRequestLogging extension methods
+- ✅ `RequestLoggingExtensionsTests.cs` - New test suite with 4 comprehensive tests
 
-2. **GREEN**: Create `RequestLoggingExtensions.cs`
-  - Implement UseWanderpoolRequestLogging
-  - Accept optional configuration action
-  - Run tests → ALL PASS
+**Implementation Details:**
+- WebApplication extension method: `UseWanderpoolRequestLogging()` with optional configuration parameter
+- IApplicationBuilder extension method: `UseWanderpoolRequestLogging()` with optional configuration parameter
+- Both overloads support method chaining via return value
+- Optional `Action<RequestLoggingOptions>?` parameter allows inline configuration
+- Proper null validation with ArgumentNullException for null app
+- Integrates seamlessly with existing RequestLoggingMiddleware
 
-3. **REFACTOR**
-  - Add XML documentation
-  - Run tests → ALL PASS
+**Test Coverage:**
+- UseWanderpoolRequestLogging_RegistersMiddleware() - Verifies middleware registration and app return
+- UseWanderpoolRequestLogging_AcceptsConfigurationParameter() - Verifies optional config parameter accepted
+- UseWanderpoolRequestLogging_IsChainable() - Verifies method chaining with other middleware
+- UseWanderpoolRequestLogging_WithNullApp_ThrowsArgumentNullException() - Verifies null validation
+- All 209 tests passing (4 new + 205 previous)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Configuration lambda works
-- [ ] Method is chainable
+**Fluent API Design:**
+- Simple, intuitive syntax: `app.UseWanderpoolRequestLogging()`
+- Optional configuration: `app.UseWanderpoolRequestLogging(o => o.EnableResponseBodyLogging = true)`
+- Chainable for pipeline composition: `app.UseWanderpoolRequestLogging().UseRouting()`
+- Dual overloads for WebApplication and IApplicationBuilder compatibility
 
-#### Deliverable
-- `RequestLoggingExtensions.cs`
-- `RequestLoggingExtensionsTests.cs` (min 3 tests)
+**Architecture Notes:**
+- Continues from STEP-024 (Body Logging)
+- Ready for STEP-026 (Outbound HTTP Logging Handler - Core)
+- Follows established ASP.NET Core middleware extension patterns
+- Configuration parameter is optional (backward compatible if options already configured)
 
 ---
 
