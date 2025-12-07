@@ -1246,42 +1246,33 @@ await httpClient.SendAsync(request);
 ## PHASE 5: API INFRASTRUCTURE
 
 ### STEP-036: Endpoint Result Extension Methods
-**Status:** PENDING  
-**User Story:** US-5.1  
-**Dependencies:** None  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create extension methods for converting OperationResult to IResult.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Api/ResultExtensionsTests.cs`
-  - Write test: Success result returns Ok with data
-  - Write test: Failed result returns appropriate status code
-  - Write test: ValidationException returns BadRequest with errors
-  - Write test: NotFoundException returns NotFound
-  - Write test: Response includes TraceId
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `ResultExtensions.cs` - Extension method for converting OperationResult to IResult
+- ✅ `ResultExtensionsTests.cs` - Comprehensive test suite with 7 tests
+  - Test: Success result returns Ok with data
+  - Test: Failed result returns Json result with error
+  - Test: ValidationException maps to BadRequest (400)
+  - Test: NotFound error maps to NotFound (404)
+  - Test: Response includes TraceId from HttpContext
+  - Test: Forbidden error maps to Forbidden (403)
+  - Test: Conflict error maps to Conflict (409)
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Api/ResultExtensions.cs`
-  - Implement ToResult<T> extension
-  - Map errors to status codes
-  - Return ApiResponseEnvelope format
-  - Run tests → ALL PASS
+**Implementation Details:**
+- ToResult<T> extension method on OperationResult<T>
+- Maps domain error codes to HTTP status codes (400, 401, 403, 404, 409, 500)
+- Returns ApiResponseEnvelope format with TraceId from HttpContext
+- Private helper methods for error mapping and error level conversion
+- Supports all domain error types (Validation, NotFound, Forbidden, Conflict, Unauthorized, etc.)
 
-3. **REFACTOR**
-  - Extract error mapping logic
-  - Run tests → ALL PASS
-
-#### Acceptance Criteria
-- [ ] All tests pass with >90% coverage
-- [ ] All error types properly mapped
-- [ ] TraceId included in responses
-- [ ] Easy to use in endpoints
-
-#### Deliverable
-- `ResultExtensions.cs`
-- `ResultExtensionsTests.cs` (min 5 tests)
+**Test Results:**
+- 278 total tests passing (1 skipped)
+- All 7 new tests passing
+- No regressions in existing tests
+- Solution builds successfully
 
 ---
 
