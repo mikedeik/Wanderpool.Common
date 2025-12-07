@@ -1,5 +1,7 @@
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
@@ -127,6 +129,53 @@ public static class LoggingExtensions
             // Support configuration from appsettings.json
             loggerConfig.ReadFrom.Configuration(context.Configuration);
         });
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds request/response logging middleware to the application pipeline.
+    /// </summary>
+    /// <param name="app">The WebApplication to add middleware to.</param>
+    /// <param name="configure">Optional action to configure RequestLoggingOptions.</param>
+    /// <returns>The WebApplication for method chaining.</returns>
+    /// <remarks>
+    /// This middleware logs incoming HTTP requests and outgoing responses with configurable options.
+    /// By default, request/response bodies are not logged for security reasons.
+    /// Sensitive headers (Authorization, X-Api-Key, etc.) should be redacted via RequestLoggingOptions.
+    ///
+    /// This middleware should be added early in the pipeline, after correlation ID middleware.
+    ///
+    /// Example:
+    /// app.UseWanderpoolRequestLogging(options => {
+    ///   options.EnableRequestBodyLogging = true;
+    ///   options.MaxBodySizeLogged = 8192;
+    /// });
+    /// </remarks>
+    public static WebApplication UseWanderpoolRequestLogging(
+        this WebApplication app,
+        Action<RequestLoggingOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        ((IApplicationBuilder)app).UseWanderpoolRequestLogging(configure);
+        return app;
+    }
+
+    /// <summary>
+    /// Adds request/response logging middleware to the application pipeline.
+    /// </summary>
+    /// <param name="builder">The IApplicationBuilder to add middleware to.</param>
+    /// <param name="configure">Optional action to configure RequestLoggingOptions.</param>
+    /// <returns>The IApplicationBuilder for method chaining.</returns>
+    public static IApplicationBuilder UseWanderpoolRequestLogging(
+        this IApplicationBuilder builder,
+        Action<RequestLoggingOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        // Add the middleware
+        builder.UseMiddleware<RequestLoggingMiddleware>();
 
         return builder;
     }
