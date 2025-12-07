@@ -820,43 +820,52 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-027: Outbound HTTP Logging - URL Redaction
-**Status:** PENDING  
-**User Story:** US-1.3  
-**Dependencies:** STEP-026  
-**Estimated Effort:** 2 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Implement sensitive data redaction in URLs (tokens, keys in query strings).
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Extend `LoggingHandlerTests.cs`
-  - Write test: Query param "token" is redacted
-  - Write test: Query param "key" is redacted
-  - Write test: Query param "password" is redacted
-  - Write test: Query param "api-key" is redacted
-  - Write test: Non-sensitive params are NOT redacted
-  - Run tests → NEW TESTS FAIL
+**Deliverables:**
+- ✅ `LoggingHandler.cs` - Enhanced with URL redaction for sensitive query parameters
+- ✅ `LoggingHandlerTests.cs` - Extended with 5 additional redaction tests
 
-2. **GREEN**: Update `LoggingHandler.cs`
-  - Implement URL redaction with regex
-  - Replace sensitive param values with [REDACTED]
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Sensitive query parameters list: token, key, password, api-key, api_key, secret, authorization, auth_token, access_token, refresh_token, bearer, x-api-key, x-auth-token
+- Case-insensitive parameter name matching via StringComparer.OrdinalIgnoreCase
+- Redaction approach: Replaces sensitive parameter values with [REDACTED] marker
+- URL structure preserved: Only parameter values are modified, not names or structure
+- Redaction applied to: request logs, response logs, and exception logs
+- Handles null URIs and URIs without query strings gracefully
+- Non-sensitive query parameters preserved exactly as-is in logs
 
-3. **REFACTOR**
-  - Optimize regex compilation
-  - Make sensitive param list configurable
-  - Run tests → ALL PASS
+**Test Coverage:**
+- SendAsync_RedactsTokenQueryParam() - Verifies token parameter redaction
+- SendAsync_RedactsKeyQueryParam() - Verifies key parameter redaction
+- SendAsync_RedactsPasswordQueryParam() - Verifies password parameter redaction
+- SendAsync_RedactsApiKeyQueryParam() - Verifies api-key parameter redaction
+- SendAsync_PreservesNonSensitiveQueryParams() - Verifies non-sensitive params preserved
+- All 220 tests passing (5 new + 215 previous)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Sensitive query params redacted
-- [ ] URL structure preserved
-- [ ] Minimal performance impact
+**Sensitive Parameter List:**
+Common variations covered:
+- token, key, password: Basic security parameters
+- api-key, api_key: API authentication (underscore and hyphen variants)
+- secret, authorization: Authentication and secret storage
+- auth_token, access_token, refresh_token: OAuth/JWT tokens
+- bearer: HTTP Bearer token prefix
+- x-api-key, x-auth-token: Common custom header variants
 
-#### Deliverable
-- Updated `LoggingHandler.cs`
-- 5 additional tests
-- Configurable sensitive param list
+**Performance Characteristics:**
+- O(n) complexity where n = number of query parameters
+- Minimal overhead: Simple string splitting and comparison
+- No regex compilation - direct HashSet lookup via StringComparer
+- Early return for URIs without query strings
+
+**Architecture Notes:**
+- Continues from STEP-026 (Outbound HTTP Logging Handler - Core)
+- Ready for STEP-028 (Client Name Tracking)
+- Uses static HashSet for sensitive parameter names (thread-safe, immutable)
+- Helper method `RedactSensitiveQueryParams()` is reusable for other components
 
 ---
 
