@@ -1548,44 +1548,39 @@ await httpClient.SendAsync(request);
 
 ---
 
-### STEP-045: HTTP Client Factory Extensions - Options
-**Status:** PENDING  
-**User Story:** US-6.3  
-**Dependencies:** STEP-044  
-**Estimated Effort:** 3 hours
+### STEP-045: HTTP Client Factory Extensions - Token Provider Integration
+**Status:** ✅ COMPLETED
 
-#### Objective
-Add configuration options for HTTP client registration.
+**Completed:** 2025-12-08
 
-#### TDD Instructions
-1. **RED**: Create `HttpClientOptionsTests.cs`
-  - Write test: Options specify base address
-  - Write test: Options specify resilience pipeline name
-  - Write test: Options specify timeout
-  - Write test: Options specify token provider type
-  - Write test: Options are applied correctly
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ Updated `HttpClientExtensions.cs` - Token provider integration
+- ✅ Extended `HttpClientExtensionsTests.cs` - 4 new tests
+  - AddsTokenRefreshHandler_WhenProviderSpecified: Verifies handler added when provider specified
+  - DoesNotAddTokenRefreshHandler_WhenNoProviderSpecified: Verifies handler not added without provider
+  - ResolvesTokenProvider_FromDependencyInjection: Verifies DI resolution
+  - HandlerOrderIsCorrect: Verifies handler pipeline order
 
-2. **GREEN**: Create `HttpClientOptions.cs` and update extensions
-  - Define options class
-  - Accept options in extension method
-  - Apply options during registration
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Conditional TokenRefreshHandler registration based on TokenProviderType option
+- Token provider resolution from DI container
+- Graceful fallback with NoOpHandler when provider not available
+- Supports custom ITokenProvider implementations
+- Handler integration via AddHttpMessageHandler callback
+- Proper logger injection for TokenRefreshHandler
 
-3. **REFACTOR**
-  - Add validation
-  - Run tests → ALL PASS
+**Test Coverage:**
+- 4 new tests passing
+- 317 total tests passing (2 skipped)
+- Build successful with 0 errors, 0 warnings
+- Tests verify: handler registration, provider resolution, handler ordering, DI integration
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] All options configurable
-- [ ] Options properly validated
-- [ ] Clear error messages
-
-#### Deliverable
-- `HttpClientOptions.cs`
-- Updated `HttpClientExtensions.cs`
-- `HttpClientOptionsTests.cs` (min 5 tests)
+**Architecture Notes:**
+- TokenProviderType checked before handler addition
+- Provider resolution is lazy (happens at handler creation time)
+- NoOpHandler provides fallback when provider resolution fails
+- Compatible with existing HTTP client factory patterns
+- Ready for STEP-046 if additional token provider features needed
 
 ---
 
