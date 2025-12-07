@@ -691,46 +691,46 @@ This document tracks the completion status of implementation steps from the Wand
 ---
 
 ### STEP-024: Request Logging - Body Logging
-**Status:** PENDING  
-**User Story:** US-1.2  
-**Dependencies:** STEP-023  
-**Estimated Effort:** 3 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Add optional request/response body logging with proper stream handling.
+**Completed:** 2025-12-07
 
-#### TDD Instructions
-1. **RED**: Extend `RequestLoggingMiddlewareTests.cs`
-  - Write test: Request body logged when enabled
-  - Write test: Request body NOT logged when disabled (default)
-  - Write test: Response body logged when enabled
-  - Write test: Stream is properly reset after reading
-  - Write test: Large bodies are truncated
-  - Run tests → NEW TESTS FAIL
+**Deliverables:**
+- ✅ Updated `RequestLoggingMiddleware.cs` - Enhanced with body logging functionality
+- ✅ Extended `RequestLoggingMiddlewareTests.cs` - 5 new tests for body logging scenarios
 
-2. **GREEN**: Update `RequestLoggingMiddleware.cs`
-  - Enable request buffering
-  - Read and log body if configured
-  - Properly reset stream position
-  - Add truncation for large bodies
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Request body logging configurable via RequestLoggingOptions.EnableRequestBodyLogging (default: false)
+- Response body logging configurable via RequestLoggingOptions.EnableResponseBodyLogging (default: false)
+- Stream handling with CanSeek validation to prevent ObjectDisposedException
+- Manual stream disposal instead of using statement to preserve stream state
+- StreamReader instantiated with leaveOpen: true to prevent closing underlying stream
+- Large body truncation at MaxBodySizeLogged limit (default: 4096 bytes) with "... [TRUNCATED]" indicator
+- Proper stream position reset before copying to original response stream
+- Try-catch block around stream reading for graceful error handling
 
-3. **REFACTOR**
-  - Extract stream reading to helper method
-  - Add max body size configuration
-  - Run tests → ALL PASS
+**Test Coverage:**
+- Middleware_LogsRequestBodyWhenEnabled() - Verifies request body logging when enabled
+- Middleware_DoesNotLogRequestBodyWhenDisabled() - Verifies default secure behavior
+- Middleware_LogsResponseBodyWhenEnabled() - Verifies response body logging when enabled
+- Middleware_ProperlyHandlesRequestBodyStreams() - Verifies stream integrity after logging
+- Middleware_TruncatesLargeBodies() - Verifies large body handling with truncation
+- All 205 tests passing (5 new + 200 previous)
+- Build successful with 0 errors, 0 warnings
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Body logging configurable
-- [ ] Streams properly handled
-- [ ] No data loss or corruption
-- [ ] Large bodies handled gracefully
+**Stream Handling Strategy:**
+- Uses MemoryStream to buffer response body transparently
+- Checks CanSeek before attempting Position reset
+- Copies buffered content to original stream after logging
+- Proper disposal order: memoryStream → originalBodyStream
+- Defensive programming with try-catch around stream operations
 
-#### Deliverable
-- Updated `RequestLoggingMiddleware.cs`
-- 5 additional tests
-- Body size limit configuration
+**Architecture Notes:**
+- Continues from STEP-023 (Header Redaction)
+- Ready for STEP-025 (Request Logging Extension Method)
+- Request/response body logging disabled by default (security default)
+- Configurable truncation prevents log bloat from large payloads
+- Stream handling prevents data loss or corruption
 
 ---
 
