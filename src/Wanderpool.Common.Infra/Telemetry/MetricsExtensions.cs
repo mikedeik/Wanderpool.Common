@@ -212,4 +212,51 @@ public static class MetricsExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Adds circuit breaker state metrics to the service collection.
+    /// Requires OpenTelemetry metrics to be configured first via AddWanderpoolMetrics().
+    /// </summary>
+    /// <param name="services">The service collection to add metrics to.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    /// <remarks>
+    /// This creates an observable gauge for circuit breaker state tracking:
+    /// - wanderpool_circuit_breaker_state: Observable gauge reporting circuit state (0=Closed, 1=Open, 2=Half-Open)
+    /// - Tagged by: circuit_name
+    ///
+    /// The CircuitBreakerStateRegistry must be updated by resilience pipeline handlers
+    /// when circuit state changes occur.
+    /// </remarks>
+    public static IServiceCollection AddWanderpoolCircuitBreakerMetrics(
+        this IServiceCollection services)
+    {
+        var meter = new Meter("Wanderpool.CircuitBreaker", "1.0.0");
+        var stateRegistry = new CircuitBreakerStateRegistry();
+
+        var stateGauge = meter.CreateObservableGauge(
+            "wanderpool_circuit_breaker_state",
+            () =>
+            {
+                var measurements = new List<Measurement<int>>();
+                foreach (var kvp in stateRegistry.GetAllStates())
+                {
+                    measurements.Add(new Measurement<int>(
+                        kvp.Value,
+                        new KeyValuePair<string, object?>("circuit_name", kvp.Key)));
+                }
+                return measurements;
+            },
+            description: "Circuit breaker state (0=Closed, 1=Open, 2=Half-Open)");
+
+        var instruments = new CircuitBreakerMetricsInstruments
+        {
+            CircuitBreakerStateGauge = stateGauge,
+            CircuitBreakerStateRegistry = stateRegistry
+        };
+
+        services.AddSingleton(instruments);
+        services.AddSingleton(stateRegistry);
+
+        return services;
+    }
 }
