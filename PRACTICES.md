@@ -282,6 +282,262 @@ All new configuration-aware methods follow this pattern:
 
 ---
 
+## Return Type Patterns
+
+### Overview
+
+The Wanderpool project uses two distinct return types for different layers of the application:
+
+| Layer | Return Type | Purpose |
+|-------|-------------|---------|
+| API Endpoints | `ApiResponseEnvelope<T>` | HTTP response wrapper with standardized format |
+| Services, Handlers, Utilities | `OperationResult<T>` | Internal operation result with success/failure state |
+
+### OperationResult<T> - For Internal Operations
+
+Use `OperationResult<T>` for all internal operations including:
+- Service methods
+- Command handlers
+- Query handlers
+- Domain operations
+- Utility methods
+
+**Location:** `Wanderpool.Common.Contracts.Operations.OperationResult`
+
+```csharp
+// Definition
+public record OperationResult(bool IsSuccess, OperationResultError? Error);
+public record OperationResult<T>(T? Value, bool IsSuccess, OperationResultError? Error) : OperationResult(IsSuccess, Error);
+```
+
+#### Creating Success Results
+
+```csharp
+// Success without data
+return OperationResult.Success();
+
+// Success with data
+return OperationResult.Success(user);
+
+// Success with data and warning
+return OperationResult.Success(user, new OperationResultError("DATA_STALE", "Data may be stale", OperationResultErrorLevel.Warning));
+
+// Implicit conversion from value
+public async Task<OperationResult<User>> GetUserAsync(int id)
+{
+    var user = await _repository.GetByIdAsync(id);
+    return user; // Implicit conversion to OperationResult<User>
+}
+```
+
+#### Creating Failure Results
+
+```csharp
+// Failure with error
+return OperationResult.Fail(new OperationResultError("NOT_FOUND", "User not found"));
+
+// Failure with typed result
+return OperationResult.Fail<User>(new OperationResultError("VALIDATION_ERROR", "Invalid email format"));
+
+// Implicit conversion from error
+public async Task<OperationResult<User>> GetUserAsync(int id)
+{
+    if (id <= 0)
+        return new OperationResultError("INVALID_ID", "ID must be positive"); // Implicit conversion
+
+    // ...
+}
+```
+
+#### Example Service Implementation
+
+```csharp
+public class UserService : IUserService
+{
+    private readonly IUserRepository _repository;
+
+    public async Task<OperationResult<User>> GetUserByIdAsync(int userId)
+    {
+        if (userId <= 0)
+            return OperationResult.Fail<User>(
+                new OperationResultError("INVALID_ID", "User ID must be positive"));
+
+        var user = await _repository.GetByIdAsync(userId);
+
+        if (user == null)
+            return OperationResult.Fail<User>(
+                new OperationResultError("NOT_FOUND", $"User with ID {userId} was not found"));
+
+        return OperationResult.Success(user);
+    }
+
+    public async Task<OperationResult<User>> CreateUserAsync(CreateUserCommand command)
+    {
+        // Validation
+        if (string.IsNullOrWhiteSpace(command.Email))
+            return OperationResult.Fail<User>(
+                new OperationResultError("VALIDATION_ERROR", "Email is required"));
+
+        // Check for duplicates
+        var existing = await _repository.GetByEmailAsync(command.Email);
+        if (existing != null)
+            return OperationResult.Fail<User>(
+                new OperationResultError("CONFLICT", "User with this email already exists"));
+
+        // Create user
+        var user = new User { Email = command.Email, Name = command.Name };
+        await _repository.AddAsync(user);
+
+        return OperationResult.Success(user);
+    }
+}
+```
+
+### ApiResponseEnvelope<T> - For API Endpoints
+
+Use `ApiResponseEnvelope<T>` for all API endpoint responses. This provides a consistent format for HTTP clients.
+
+**Location:** `Wanderpool.Common.Contracts.ApiResponse.ApiResponseEnvelope`
+
+```csharp
+// Definition
+public class ApiResponseEnvelope<T>
+{
+    public T? Data { get; set; }
+    public bool IsSuccess { get; set; }
+    public ApiResponseError? Error { get; set; }
+    public string? TraceId { get; set; }
+}
+```
+
+#### Converting OperationResult to ApiResponseEnvelope
+
+Use the `ToResult()` extension method to convert `OperationResult<T>` to `IResult` in endpoints:
+
+```csharp
+app.MapGet("/api/users/{id}", async (int id, IUserService userService, HttpContext context) =>
+{
+    var result = await userService.GetUserByIdAsync(id);
+    return result.ToResult(context);
+});
+```
+
+#### Using ApiResponse Helper Methods
+
+For direct responses without going through a service:
+
+```csharp
+// Success responses
+app.MapGet("/api/health", (HttpContext context) =>
+    ApiResponse.Ok("Healthy", context));
+
+app.MapPost("/api/users", async (CreateUserRequest request, HttpContext context) =>
+{
+    // ... create user
+    return ApiResponse.Created(user, $"/api/users/{user.Id}", context);
+});
+
+// Error responses
+app.MapGet("/api/users/{id}", async (int id, HttpContext context) =>
+{
+    if (id <= 0)
+        return ApiResponse.BadRequest("INVALID_ID", "ID must be positive", context);
+
+    // ...
+});
+```
+
+### Standard Error Codes
+
+Use consistent error codes across the application:
+
+| Error Code | HTTP Status | Description |
+|------------|-------------|-------------|
+| `VALIDATION_ERROR` | 400 | Request validation failed |
+| `UNAUTHORIZED` | 401 | Authentication required |
+| `FORBIDDEN` | 403 | Access denied |
+| `NOT_FOUND` | 404 | Resource not found |
+| `CONFLICT` | 409 | Resource conflict (duplicate, concurrent modification) |
+| `BUSINESS_RULE_VIOLATION` | 422 | Business rule violated |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+| `UPSTREAM_ERROR` | 502 | External service failure |
+
+### Complete Endpoint Example
+
+```csharp
+public static class UserEndpoints
+{
+    public static void MapUserEndpoints(this WebApplication app)
+    {
+        var group = app.MapGroup("/api/users").WithTags("Users");
+
+        group.MapGet("/{id}", GetUserById);
+        group.MapPost("/", CreateUser).WithValidation<CreateUserRequest>();
+        group.MapPut("/{id}", UpdateUser).WithValidation<UpdateUserRequest>();
+        group.MapDelete("/{id}", DeleteUser);
+    }
+
+    private static async Task<IResult> GetUserById(
+        int id,
+        IUserService userService,
+        HttpContext context)
+    {
+        var result = await userService.GetUserByIdAsync(id);
+        return result.ToResult(context);
+    }
+
+    private static async Task<IResult> CreateUser(
+        CreateUserRequest request,
+        IUserService userService,
+        HttpContext context)
+    {
+        var result = await userService.CreateUserAsync(new CreateUserCommand
+        {
+            Email = request.Email,
+            Name = request.Name
+        });
+
+        if (!result.IsSuccess)
+            return result.ToResult(context);
+
+        return ApiResponse.Created(result.Value, $"/api/users/{result.Value!.Id}", context);
+    }
+
+    private static async Task<IResult> UpdateUser(
+        int id,
+        UpdateUserRequest request,
+        IUserService userService,
+        HttpContext context)
+    {
+        var result = await userService.UpdateUserAsync(id, new UpdateUserCommand
+        {
+            Name = request.Name
+        });
+        return result.ToResult(context);
+    }
+
+    private static async Task<IResult> DeleteUser(
+        int id,
+        IUserService userService,
+        HttpContext context)
+    {
+        var result = await userService.DeleteUserAsync(id);
+        return result.ToResult(context);
+    }
+}
+```
+
+### Why Not ProblemDetails?
+
+While RFC 7807 ProblemDetails is an industry standard, we chose `ApiResponseEnvelope<T>` for consistency:
+
+1. **Unified format**: Both success and error responses use the same wrapper
+2. **Simpler client handling**: Clients always deserialize to the same type
+3. **Richer metadata**: Includes `TraceId` and custom error levels
+4. **Existing infrastructure**: Already integrated with `OperationResult<T>` throughout the codebase
+
+---
+
 For more information about ASP.NET Core Options Pattern:
 - [Microsoft Docs: Options Pattern](https://docs.microsoft.com/en-us/dotnet/core/extensions/options)
 - [Configuration in .NET](https://docs.microsoft.com/en-us/dotnet/core/extensions/configuration)

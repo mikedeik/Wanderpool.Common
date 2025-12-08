@@ -1812,81 +1812,33 @@ app.Run();
 ---
 
 ### STEP-051: Problem Details Support - Mapper
-**Status:** PENDING  
-**User Story:** US-2.3  
-**Dependencies:** STEP-004  
-**Estimated Effort:** 3 hours
+**Status:** ⏭️ SKIPPED
 
-#### Objective
-Create mapper to convert exceptions to RFC 7807 ProblemDetails.
+**Skipped:** 2025-12-08
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Exceptions/ProblemDetailsMapperTests.cs`
-  - Write test: ValidationException maps to ProblemDetails
-  - Write test: NotFoundException maps to ProblemDetails
-  - Write test: ProblemDetails includes type URI
-  - Write test: ProblemDetails includes instance path
-  - Write test: ProblemDetails includes traceId
-  - Write test: Extension properties included
-  - Run tests → ALL FAIL
+**Reason:** Project uses `OperationResult<T>` and `ApiResponseEnvelope<T>` instead of RFC 7807 ProblemDetails.
 
-2. **GREEN**: Create `src/Wanderpool.Common.Infra/Exceptions/ProblemDetailsMapper.cs`
-  - Implement mapping logic
-  - Set all RFC 7807 properties
-  - Add extension properties
-  - Run tests → ALL PASS
+**Decision Rationale:**
+- Unified format: Both success and error responses use the same `ApiResponseEnvelope<T>` wrapper
+- Simpler client handling: Clients always deserialize to the same type
+- Richer metadata: Includes `TraceId` and custom error levels via `OperationResultErrorLevel`
+- Existing infrastructure: `OperationResult<T>` already integrated throughout the codebase
 
-3. **REFACTOR**
-  - Extract URI generation
-  - Run tests → ALL PASS
-
-#### Acceptance Criteria
-- [ ] All tests pass with >90% coverage
-- [ ] All RFC 7807 fields populated
-- [ ] Extension properties work
-- [ ] URIs point to documentation
-
-#### Deliverable
-- `ProblemDetailsMapper.cs`
-- `ProblemDetailsMapperTests.cs` (min 6 tests)
+**Documentation:**
+- Return type patterns documented in `PRACTICES.md` under "Return Type Patterns" section
+- `OperationResult<T>` for services, handlers, and utilities
+- `ApiResponseEnvelope<T>` for API endpoints
 
 ---
 
 ### STEP-052: Problem Details Support - Integration
-**Status:** PENDING  
-**User Story:** US-2.3  
-**Dependencies:** STEP-051  
-**Estimated Effort:** 2 hours
+**Status:** ⏭️ SKIPPED
 
-#### Objective
-Integrate ProblemDetails option into exception handling middleware.
+**Skipped:** 2025-12-08
 
-#### TDD Instructions
-1. **RED**: Extend `GlobalExceptionMiddlewareTests.cs`
-  - Write test: ProblemDetails returned when option enabled
-  - Write test: ApiResponseEnvelope returned when option disabled
-  - Write test: Option configurable via WanderpoolOptions
-  - Run tests → NEW TESTS FAIL
+**Reason:** Depends on STEP-051 which was skipped. Project uses `ApiResponseEnvelope<T>` for all API responses.
 
-2. **GREEN**: Update `GlobalExceptionMiddleware.cs`
-  - Accept UseProblemDetails option
-  - Conditionally use ProblemDetailsMapper
-  - Run tests → ALL PASS
-
-3. **REFACTOR**
-  - Extract response writing logic
-  - Run tests → ALL PASS
-
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] Both response formats supported
-- [ ] Option properly respected
-- [ ] Backward compatible
-
-#### Deliverable
-- Updated `GlobalExceptionMiddleware.cs`
-- 3 additional tests
-- Updated `WanderpoolOptions.cs`
+**Note:** The existing `GlobalExceptionMiddleware` already returns `ApiResponseEnvelope<T>` format for errors, which is the preferred pattern for this project.
 
 ---
 
