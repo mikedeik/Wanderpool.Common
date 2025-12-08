@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Wanderpool.Common.Infra.Logging;
 using Wanderpool.Common.Infra.Telemetry;
 
@@ -13,28 +14,53 @@ namespace Wanderpool.Common.Infra.Tests.Logging;
 /// </summary>
 public class RequestLoggingMiddlewareTests
 {
+    /// <summary>
+    /// Creates a TestServer with standard middleware configuration.
+    /// </summary>
+    private static TestServer CreateTestServer(
+        Action<RequestLoggingOptions>? configureOptions = null,
+        RequestDelegate? requestHandler = null)
+    {
+        var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
+            {
+                webBuilder.UseTestServer();
+                webBuilder.ConfigureServices(services =>
+                {
+                    services.AddWanderpoolCorrelationId();
+                    services.Configure<RequestLoggingOptions>(options =>
+                    {
+                        options.EnableRequestBodyLogging = false;
+                        options.EnableResponseBodyLogging = false;
+                        configureOptions?.Invoke(options);
+                    });
+                    services.AddRouting();
+                });
+                webBuilder.Configure(app =>
+                {
+                    app.UseWanderpoolCorrelationId();
+                    app.UseWanderpoolRequestLogging();
+                    if (requestHandler != null)
+                    {
+                        app.Run(requestHandler);
+                    }
+                    else
+                    {
+                        app.Run(async context => await context.Response.WriteAsync("Success"));
+                    }
+                });
+            })
+            .Build();
+
+        host.Start();
+        return host.GetTestServer();
+    }
+
     [Fact]
     public async Task Middleware_AllowsRequestsToPassThrough()
     {
         // Arrange
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync("Success"));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer();
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -49,24 +75,8 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         var expectedBody = "Test Response Body";
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync(expectedBody));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer(
+            requestHandler: async context => await context.Response.WriteAsync(expectedBody));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -84,28 +94,12 @@ public class RequestLoggingMiddlewareTests
         var correlationId = "test-correlation-id-123";
         string? capturedCorrelationId = null;
 
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var testServer = CreateTestServer(
+            requestHandler: context =>
             {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(context =>
-                {
-                    capturedCorrelationId = context.Items["CorrelationId"]?.ToString();
-                    return context.Response.WriteAsync("OK");
-                });
+                capturedCorrelationId = context.Items["CorrelationId"]?.ToString();
+                return context.Response.WriteAsync("OK");
             });
-
-        using var testServer = new TestServer(builder);
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -123,28 +117,12 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         var sensitiveData = "SENSITIVE_REQUEST_BODY_DATA";
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var testServer = CreateTestServer(
+            requestHandler: async context =>
             {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context =>
-                {
-                    context.Response.StatusCode = 201;
-                    await context.Response.WriteAsync("Created");
-                });
+                context.Response.StatusCode = 201;
+                await context.Response.WriteAsync("Created");
             });
-
-        using var testServer = new TestServer(builder);
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -160,28 +138,12 @@ public class RequestLoggingMiddlewareTests
     public async Task Middleware_PreservesResponseContentType()
     {
         // Arrange
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var testServer = CreateTestServer(
+            requestHandler: async context =>
             {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context =>
-                {
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync("{\"status\":\"ok\"}");
-                });
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync("{\"status\":\"ok\"}");
             });
-
-        using var testServer = new TestServer(builder);
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -195,29 +157,12 @@ public class RequestLoggingMiddlewareTests
     public async Task Middleware_Returns404ForNonExistentEndpoint()
     {
         // Arrange
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var testServer = CreateTestServer(
+            requestHandler: async context =>
             {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context =>
-                {
-                    // This endpoint intentionally doesn't exist
-                    context.Response.StatusCode = 404;
-                    await context.Response.WriteAsync("Not Found");
-                });
+                context.Response.StatusCode = 404;
+                await context.Response.WriteAsync("Not Found");
             });
-
-        using var testServer = new TestServer(builder);
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -232,28 +177,12 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         string? capturedMethod = null;
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var testServer = CreateTestServer(
+            requestHandler: context =>
             {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(context =>
-                {
-                    capturedMethod = context.Request.Method;
-                    return context.Response.WriteAsync("OK");
-                });
+                capturedMethod = context.Request.Method;
+                return context.Response.WriteAsync("OK");
             });
-
-        using var testServer = new TestServer(builder);
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -269,24 +198,8 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         var authorizationValue = "Bearer secret-token-12345";
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync("OK"));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer(
+            requestHandler: async context => await context.Response.WriteAsync("OK"));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -303,24 +216,8 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         var apiKeyValue = "super-secret-api-key";
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync("OK"));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer(
+            requestHandler: async context => await context.Response.WriteAsync("OK"));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -337,24 +234,8 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         var cookieValue = "session=abc123def456";
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync("OK"));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer(
+            requestHandler: async context => await context.Response.WriteAsync("OK"));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -373,28 +254,12 @@ public class RequestLoggingMiddlewareTests
         var customHeaderValue = "custom-value";
         string? capturedCustomHeader = null;
 
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var testServer = CreateTestServer(
+            requestHandler: context =>
             {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(context =>
-                {
-                    capturedCustomHeader = context.Request.Headers["X-Custom-Header"].ToString();
-                    return context.Response.WriteAsync("OK");
-                });
+                capturedCustomHeader = context.Request.Headers["X-Custom-Header"].ToString();
+                return context.Response.WriteAsync("OK");
             });
-
-        using var testServer = new TestServer(builder);
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -411,26 +276,9 @@ public class RequestLoggingMiddlewareTests
     public async Task Middleware_AllowsConfigurableRedactionList()
     {
         // Arrange
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                    // Verify we can modify the redaction list
-                    options.SensitiveHeaders.Add("X-Custom-Secret");
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync("OK"));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer(
+            configureOptions: options => options.SensitiveHeaders.Add("X-Custom-Secret"),
+            requestHandler: async context => await context.Response.WriteAsync("OK"));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -447,24 +295,9 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         var requestBody = "request-body-data";
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = true;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync("OK"));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer(
+            configureOptions: options => options.EnableRequestBodyLogging = true,
+            requestHandler: async context => await context.Response.WriteAsync("OK"));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -481,24 +314,8 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         var requestBody = "secret-request-data";
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync("OK"));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer(
+            requestHandler: async context => await context.Response.WriteAsync("OK"));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -515,24 +332,9 @@ public class RequestLoggingMiddlewareTests
     {
         // Arrange
         var responseBody = "response-body-data";
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = false;
-                    options.EnableResponseBodyLogging = true;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context => await context.Response.WriteAsync(responseBody));
-            });
-
-        using var testServer = new TestServer(builder);
+        using var testServer = CreateTestServer(
+            configureOptions: options => options.EnableResponseBodyLogging = true,
+            requestHandler: async context => await context.Response.WriteAsync(responseBody));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -551,30 +353,14 @@ public class RequestLoggingMiddlewareTests
         var requestBody = "test-body-content";
         string? capturedRequestBody = null;
 
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var testServer = CreateTestServer(
+            configureOptions: options => options.EnableRequestBodyLogging = true,
+            requestHandler: async context =>
             {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = true;
-                    options.EnableResponseBodyLogging = false;
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context =>
-                {
-                    // Read the request body - should work after middleware processing
-                    using var reader = new StreamReader(context.Request.Body);
-                    capturedRequestBody = await reader.ReadToEndAsync();
-                    await context.Response.WriteAsync("OK");
-                });
+                using var reader = new StreamReader(context.Request.Body);
+                capturedRequestBody = await reader.ReadToEndAsync();
+                await context.Response.WriteAsync("OK");
             });
-
-        using var testServer = new TestServer(builder);
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -591,30 +377,16 @@ public class RequestLoggingMiddlewareTests
     public async Task Middleware_TruncatesLargeBodies()
     {
         // Arrange
-        var largeRequestBody = new string('x', 10000); // 10KB request body
-        var expectedResponseBody = new string('y', 8000); // 8KB response body
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        var largeRequestBody = new string('x', 10000);
+        var expectedResponseBody = new string('y', 8000);
+        using var testServer = CreateTestServer(
+            configureOptions: options =>
             {
-                services.AddWanderpoolCorrelationId();
-                services.Configure<RequestLoggingOptions>(options =>
-                {
-                    options.EnableRequestBodyLogging = true;
-                    options.EnableResponseBodyLogging = true;
-                    options.MaxBodySizeLogged = 1024; // 1KB limit for logging
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseWanderpoolCorrelationId();
-                app.UseWanderpoolRequestLogging();
-                app.Run(async context =>
-                {
-                    await context.Response.WriteAsync(expectedResponseBody);
-                });
-            });
-
-        using var testServer = new TestServer(builder);
+                options.EnableRequestBodyLogging = true;
+                options.EnableResponseBodyLogging = true;
+                options.MaxBodySizeLogged = 1024;
+            },
+            requestHandler: async context => await context.Response.WriteAsync(expectedResponseBody));
         using var httpClient = testServer.CreateClient();
 
         // Act
@@ -623,7 +395,7 @@ public class RequestLoggingMiddlewareTests
         var response = await httpClient.SendAsync(request);
         var actualBody = await response.Content.ReadAsStringAsync();
 
-        // Assert - Response should be returned unchanged despite large body logging
+        // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(expectedResponseBody, actualBody);
     }

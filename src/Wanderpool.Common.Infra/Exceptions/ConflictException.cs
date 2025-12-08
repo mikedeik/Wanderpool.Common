@@ -36,25 +36,5 @@ public class ConflictException : WanderpoolException
         ResourceIdentifier = resourceIdentifier;
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ConflictException"/> class for deserialization.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    protected ConflictException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-        ResourceIdentifier = info.GetString(nameof(ResourceIdentifier)) ?? "";
-    }
-
-    /// <summary>
-    /// Populates the serialization info with exception data.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    public override void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        base.GetObjectData(info, context);
-        info.AddValue(nameof(ResourceIdentifier), ResourceIdentifier);
-    }
+    
 }

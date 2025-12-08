@@ -1,12 +1,9 @@
-using System.Runtime.Serialization;
-
 namespace Wanderpool.Common.Infra.Exceptions;
 
 /// <summary>
 /// Base exception class for all Wanderpool domain exceptions.
 /// Includes error codes for consistent error handling across services.
 /// </summary>
-[Serializable]
 public class WanderpoolException : Exception
 {
     /// <summary>
@@ -51,27 +48,5 @@ public class WanderpoolException : Exception
             throw new ArgumentException("Error code cannot be empty.", nameof(errorCode));
 
         ErrorCode = errorCode;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WanderpoolException"/> class for deserialization.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    protected WanderpoolException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-        ErrorCode = info.GetString(nameof(ErrorCode)) ?? "UNKNOWN_ERROR";
-    }
-
-    /// <summary>
-    /// Populates the serialization info with exception data.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    public override void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        base.GetObjectData(info, context);
-        info.AddValue(nameof(ErrorCode), ErrorCode);
     }
 }

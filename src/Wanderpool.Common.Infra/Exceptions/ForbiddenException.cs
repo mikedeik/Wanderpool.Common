@@ -26,14 +26,4 @@ public class ForbiddenException : WanderpoolException
         : base("FORBIDDEN", message, innerException)
     {
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ForbiddenException"/> class for deserialization.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    protected ForbiddenException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-    }
 }

@@ -35,26 +35,6 @@ public class BusinessRuleException : WanderpoolException
     {
         RuleName = ruleName;
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BusinessRuleException"/> class for deserialization.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    protected BusinessRuleException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-        RuleName = info.GetString(nameof(RuleName)) ?? "";
-    }
-
-    /// <summary>
-    /// Populates the serialization info with exception data.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    public override void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        base.GetObjectData(info, context);
-        info.AddValue(nameof(RuleName), RuleName);
-    }
+    
+    
 }

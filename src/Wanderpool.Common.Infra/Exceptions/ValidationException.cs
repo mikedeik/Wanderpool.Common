@@ -33,46 +33,7 @@ public class ValidationException : WanderpoolException
         // Create a defensive copy to ensure immutability
         Errors = new Dictionary<string, string[]>(errors);
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ValidationException"/> class for deserialization.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    protected ValidationException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-        var errorCount = info.GetInt32("ErrorCount");
-        var errors = new Dictionary<string, string[]>();
-
-        for (int i = 0; i < errorCount; i++)
-        {
-            var fieldName = info.GetString($"Field_{i}") ?? "";
-            var errorMessages = (string[]?)info.GetValue($"Errors_{i}", typeof(string[])) ?? Array.Empty<string>();
-            errors[fieldName] = errorMessages;
-        }
-
-        Errors = errors;
-    }
-
-    /// <summary>
-    /// Populates the serialization info with exception data.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    public override void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        base.GetObjectData(info, context);
-
-        info.AddValue("ErrorCount", Errors.Count);
-        int index = 0;
-        foreach (var kvp in Errors)
-        {
-            info.AddValue($"Field_{index}", kvp.Key);
-            info.AddValue($"Errors_{index}", kvp.Value);
-            index++;
-        }
-    }
+    
 
     /// <summary>
     /// Formats validation errors into a readable error message.

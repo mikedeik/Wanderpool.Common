@@ -29,28 +29,4 @@ public class NotFoundException : WanderpoolException
         ResourceType = resourceType;
         ResourceId = resourceId;
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NotFoundException"/> class for deserialization.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    protected NotFoundException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-        ResourceType = info.GetString(nameof(ResourceType)) ?? "";
-        ResourceId = info.GetString(nameof(ResourceId)) ?? "";
-    }
-
-    /// <summary>
-    /// Populates the serialization info with exception data.
-    /// </summary>
-    /// <param name="info">The serialization info.</param>
-    /// <param name="context">The streaming context.</param>
-    public override void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        base.GetObjectData(info, context);
-        info.AddValue(nameof(ResourceType), ResourceType);
-        info.AddValue(nameof(ResourceId), ResourceId);
-    }
 }
