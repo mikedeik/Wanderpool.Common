@@ -4,6 +4,29 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <!-- NuGet Package Metadata -->
+        <PackageId>Wanderpool.Common.Contracts</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Wanderpool</Authors>
+        <Company>Wanderpool</Company>
+        <Description>Common contracts, DTOs, and result types for Wanderpool services. Includes OperationResult, ApiResponseEnvelope, and error types.</Description>
+        <PackageTags>wanderpool;contracts;dto;result-pattern;api-response</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/wanderpool/Wanderpool.Common</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
+        <!-- Symbol Package -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <!-- Generate XML documentation -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+    </ItemGroup>
 
 </Project>

@@ -5,7 +5,30 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <OutputType>Library</OutputType>
+
+        <!-- NuGet Package Metadata -->
+        <PackageId>Wanderpool.Common.Infra</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Wanderpool</Authors>
+        <Company>Wanderpool</Company>
+        <Description>Production-ready .NET infrastructure library providing middleware, telemetry, resilience patterns, and standardized API response handling. Includes exception handling, request logging, correlation ID, health checks, HTTP resilience with Polly, and OpenTelemetry integration.</Description>
+        <PackageTags>wanderpool;middleware;telemetry;resilience;polly;opentelemetry;health-checks;logging;serilog;correlation-id</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/wanderpool/Wanderpool.Common</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
+        <!-- Symbol Package -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <!-- Generate XML documentation -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="11.9.0" />
