@@ -1843,42 +1843,42 @@ app.Run();
 ---
 
 ### STEP-053: Integration Testing Infrastructure
-**Status:** PENDING  
-**User Story:** N/A (Testing Support)  
-**Dependencies:** STEP-049  
-**Estimated Effort:** 4 hours
+**Status:** ✅ COMPLETED
 
-#### Objective
-Create helper utilities for integration testing with TestServer.
+**Completed:** 2025-12-08
 
-#### TDD Instructions
-1. **RED**: Create `Wanderpool.Common.Infra.Tests/Integration/TestServerBuilderTests.cs`
-  - Write test: TestServer with full infrastructure can be created
-  - Write test: Configuration can be customized
-  - Write test: Services can be mocked
-  - Write test: HTTP client from TestServer works
-  - Run tests → ALL FAIL
+**Deliverables:**
+- ✅ `WanderpoolTestServerBuilder.cs` - Builder class in test project (tests/TestHelpers/)
+- ✅ `TestServerBuilderTests.cs` - 6 comprehensive tests
 
-2. **GREEN**: Create `TestHelpers/WanderpoolTestServerBuilder.cs`
-  - Implement builder for TestServer
-  - Allow configuration customization
-  - Allow service overrides
-  - Run tests → ALL PASS
+**Implementation Details:**
+- Fluent API builder pattern for test configuration
+- WithServiceName() - Required service name for telemetry
+- WithServiceVersion() - Optional service version
+- WithConfiguration() - Custom configuration dictionary
+- ConfigureServices() - Service registration overrides
+- WithEndpoint() - Custom test endpoints
+- Build() - Creates configured TestServer instance
 
-3. **REFACTOR**
-  - Add convenience methods
-  - Run tests → ALL PASS
+**Infrastructure Setup:**
+- Registers WanderpoolInfrastructure with disabled telemetry exporters
+- Adds GlobalExceptionMiddleware for error handling
+- Adds CorrelationIdMiddleware for request correlation
+- Maps /health/live and /health/ready endpoints
+- Uses HostBuilder pattern (modern ASP.NET Core)
 
-#### Acceptance Criteria
-- [ ] All tests pass
-- [ ] TestServer easy to create
-- [ ] Configuration flexible
-- [ ] Service mocking supported
+**Test Coverage:**
+- Build_WithDefaultOptions_CreatesTestServerWithInfrastructure
+- Build_WithCustomConfiguration_AppliesConfiguration
+- Build_WithServiceOverrides_UsesOverriddenServices
+- CreateClient_ReturnsWorkingHttpClient
+- Builder_SupportsMethodChaining
+- Build_WithoutServiceName_ThrowsInvalidOperationException
 
-#### Deliverable
-- `WanderpoolTestServerBuilder.cs`
-- `TestServerBuilderTests.cs` (min 4 tests)
-- Example integration tests
+**Test Results:**
+- 6 new tests passing
+- 339 total tests passing (2 skipped)
+- Build: 0 errors
 
 ---
 
